@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>FSI251 List Page</title>
+</head>
+<body>
+	<div>
+    	Welcome <span th:text="${user.getUsername()}"></span>
+    </div>
+	<table>
+        <tr>
+            <td>Cert Number</td>
+            <td>Cert Date</td>
+            <td>File Name</td>
+        </tr>
+        <tr th:each="f: ${fsi251List}">
+            <td th:text="${f.certNo}"></td>
+            <td th:text="${f.certDate}"></td>
+            <td th:text="${f.fileName}"></td>
+        </tr>
+    </table>
+    <form th:action="@{/logout}" method="post">
+        <div>
+            <input type="submit" value="Logout"/>
+        </div>
+    </form>
+</body>
+</html>
