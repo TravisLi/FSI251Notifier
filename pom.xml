@@ -116,8 +116,6 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.39.0</version>
 				<configuration>
-					<dockerHost>tcp://TravisNAS:2375</dockerHost>
-					<certPath>/certs/client</certPath>
 					<images>
 						<image>
 							<name>mongo</name>
