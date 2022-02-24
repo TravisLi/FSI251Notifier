@@ -117,7 +117,7 @@
 				<version>0.39.0</version>
 				<configuration>
 					<dockerHost>tcp://docker:2376</dockerHost>
-					<certPath>/certs</certPath>
+					<certPath>./certs</certPath>
 					<images>
 						<image>
 							<name>mongo</name>
