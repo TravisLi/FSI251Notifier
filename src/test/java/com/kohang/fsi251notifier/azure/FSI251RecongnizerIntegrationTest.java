@@ -16,7 +16,7 @@ import org.springframework.core.io.ResourceLoader;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.util.TestUtil;
 
-@SpringBootTest(classes = {FSI251Recognizer.class, FileAccesser.class})
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FSI251RecongnizerIntegrationTest {
 
@@ -34,7 +34,7 @@ public class FSI251RecongnizerIntegrationTest {
 
 		try {
 
-			File file = resourceLoader.getResource(TestUtil.SAMPLE_FILE).getFile();			
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();			
 			fileAccesser.uploadToSrcFolder(file);
 
 		} catch (IOException e) {

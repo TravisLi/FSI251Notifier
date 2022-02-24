@@ -17,11 +17,11 @@ import org.springframework.stereotype.Component;
 
 import com.azure.core.util.polling.PollResponse;
 import com.azure.core.util.polling.SyncPoller;
-import com.azure.storage.blob.models.CopyStatusType;
 import com.azure.storage.file.share.ShareClient;
 import com.azure.storage.file.share.ShareDirectoryClient;
 import com.azure.storage.file.share.ShareFileClient;
 import com.azure.storage.file.share.ShareServiceClientBuilder;
+import com.azure.storage.file.share.models.CopyStatusType;
 import com.azure.storage.file.share.models.ShareFileCopyInfo;
 import com.azure.storage.file.share.models.ShareFileUploadInfo;
 
@@ -80,7 +80,7 @@ public class FileAccesser {
 			ShareFileClient sc = sourceDirClient.getFileClient(name);
 			ShareFileClient pc = processDirClient.createFile(name, MAX_SIZE);
 			
-			SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), null, Duration.ofSeconds(2));
+			SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), null, Duration.ofSeconds(10));
 
 			final PollResponse<ShareFileCopyInfo> pollResponse = poller.poll();
 			final ShareFileCopyInfo value = pollResponse.getValue();
@@ -118,18 +118,21 @@ public class FileAccesser {
 	
 	public String uploadToSrcFolder(File file) {
 		
-		ShareFileClient sc = sourceDirClient.createFile(file.getName(), file.length());
-		
-		InputStream uploadData;
-		try {
-			uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
-			ShareFileUploadInfo response = sc.uploadRange(uploadData, file.length());
-			return response.getETag();
+		if(file!=null&&file.length()>0) {
 			
-		} catch (IOException e) {
-			e.printStackTrace();
+			ShareFileClient sc = sourceDirClient.createFile(file.getName(), file.length());
+			
+			InputStream uploadData;
+			try {
+				uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+				ShareFileUploadInfo response = sc.uploadRange(uploadData, file.length());
+				return response.getETag();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
-		
 		
 		return "";
 		

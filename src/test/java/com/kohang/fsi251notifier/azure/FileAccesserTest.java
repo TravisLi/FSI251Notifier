@@ -36,7 +36,7 @@ public class FileAccesserTest {
 		
 		try {
 			
-			File file = resourceLoader.getResource(TestUtil.SAMPLE_FILE).getFile();			
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();			
 			assertFalse(fileAccesser.uploadToSrcFolder(file).isEmpty());
 			
 		} catch (IOException e) {

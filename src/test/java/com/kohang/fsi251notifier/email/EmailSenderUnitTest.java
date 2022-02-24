@@ -48,15 +48,15 @@ public class EmailSenderUnitTest {
 		try {
 			
 			ByteArrayOutputStream sampleFileBaos = new ByteArrayOutputStream();
-			File sampleFile = resourceLoader.getResource(TestUtil.SAMPLE_FILE).getFile();
+			File sampleFile = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 			sampleFileBaos.writeBytes(Files.readAllBytes(sampleFile.toPath()));
 			
 			ByteArrayOutputStream sampleFile1Baos = new ByteArrayOutputStream();
-			File sampleFile1 = resourceLoader.getResource(TestUtil.SAMPLE_FILE_1).getFile();
+			File sampleFile1 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_1).getFile();
 			sampleFile1Baos.writeBytes(Files.readAllBytes(sampleFile1.toPath()));
 			
 			ByteArrayOutputStream sampleFile2Baos = new ByteArrayOutputStream();
-			File sampleFile2 = resourceLoader.getResource(TestUtil.SAMPLE_FILE_2).getFile();
+			File sampleFile2 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_2).getFile();
 			sampleFile2Baos.writeBytes(Files.readAllBytes(sampleFile2.toPath()));
 			
 			when(fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE)).thenReturn(sampleFileBaos);

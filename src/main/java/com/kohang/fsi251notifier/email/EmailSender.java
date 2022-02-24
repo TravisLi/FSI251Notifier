@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDate;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -86,6 +87,8 @@ public class EmailSender {
 
 		Message message = new MimeMessage(session);
 		
+		List<File> fileList = new LinkedList<File>();
+		
 		try {
 			message.setFrom(new InternetAddress(username));
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(OFFICE_EMAIL));
@@ -102,8 +105,30 @@ public class EmailSender {
 			multipart.addBodyPart(mimeBodyPart);
 
 			for(FSI251Data data: list) {
+				
 				try {
-					multipart.addBodyPart(prepareAttachment(data));
+					
+					if(data.getFileName()!=null) {
+						
+						logger.info("Preparing attachment for " + data.getFileName());
+												
+						String tmpdir = System.getProperty("java.io.tmpdir");
+
+						logger.debug(tmpdir);
+						
+						File file = new File(tmpdir + File.separator + data.getFileName());
+						
+						Files.write(file.toPath(), fileAccesser.getProcessedFileByteArrayOutputStream(data.getFileName()).toByteArray());
+						
+						MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+						attachmentBodyPart.attachFile(file);
+						
+						multipart.addBodyPart(attachmentBodyPart);
+						
+						fileList.add(file);
+					}
+					
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 					logger.error("Attachement Preparation Error");
@@ -118,21 +143,13 @@ public class EmailSender {
 			e.printStackTrace();
 			logger.error("Email Message Prepare Exception");
 			throw e;
+		} finally {
+			
+			for(File file: fileList) {
+				logger.debug("Deleting file " + file.getAbsolutePath() + " result:" + file.delete());
+			}
+			
 		}
-
-	}
-
-	private MimeBodyPart prepareAttachment(FSI251Data data) throws IOException, MessagingException {
-
-		MimeBodyPart attachmentBodyPart = new MimeBodyPart();
-
-		logger.info("Preparing attachment for " + data.getFileName());
-
-		File file = new File(data.getFileName());
-		Files.write(file.toPath(), fileAccesser.getProcessedFileByteArrayOutputStream(data.getFileName()).toByteArray());
-		attachmentBodyPart.attachFile(file);
-
-		return attachmentBodyPart;
 
 	}
 

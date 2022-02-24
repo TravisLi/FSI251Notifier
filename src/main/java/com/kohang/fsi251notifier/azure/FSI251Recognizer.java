@@ -55,7 +55,9 @@ public class FSI251Recognizer {
 		List<String> srcFiles = accesser.getSrcFiles();
 
 		for(String fileName : srcFiles) {
-
+			
+			logger.debug(fileName);
+			
 			FSI251Data data = analyzeDocument(fileName);
 			
 			FSI251Data dataInDb =  repository.findByCertNo(data.getCertNo());

@@ -17,7 +17,7 @@ import org.springframework.core.io.ResourceLoader;
 import com.kohang.fsi251notifier.azure.FileAccesser;
 import com.kohang.fsi251notifier.util.TestUtil;
 
-@SpringBootTest(classes = {EmailSender.class, FileAccesser.class})
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EmailSenderIntegrationTest {
 
@@ -37,9 +37,9 @@ public class EmailSenderIntegrationTest {
 
 		try {
 			logger.info("Uploading file for test");
-			File file = resourceLoader.getResource(TestUtil.SAMPLE_FILE).getFile();
-			File file1 = resourceLoader.getResource(TestUtil.SAMPLE_FILE_1).getFile();	
-			File file2 = resourceLoader.getResource(TestUtil.SAMPLE_FILE_2).getFile();	
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
+			File file1 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_1).getFile();	
+			File file2 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_2).getFile();	
 			fileAccesser.uploadToProcessFolder(file);
 			fileAccesser.uploadToProcessFolder(file1);
 			fileAccesser.uploadToProcessFolder(file2);
