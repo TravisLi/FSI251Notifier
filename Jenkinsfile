@@ -8,10 +8,18 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean package docker:build'
+                sh 'mvn -B -DskipTests clean package'
             }
         }
         stage('Test') {
+        	agent {
+        		docker {
+            		image 'mongo:latest' 
+            		args '-e MONGO_INITDB_ROOT_USERNAME=admin'
+            		args '-e MONGO_INITDB_ROOT_PASSWORD=password'
+            		args '-p 27017:27017'
+        		}
+    		}
         	environment {
         		azure_endpoint = credentials('azure_endpoint')
         		azure_key = credentials('azure_key')
@@ -21,10 +29,12 @@ pipeline {
         		db_password = credentials('db_password')
         		web_user = credentials('web_user')
         		web_password = credentials('web_password')
+        		email_username = credentials('email_username')
+        		email_password = credentials('email_password')
         	} 
             steps {
             	echo 'Test start'
-                sh 'mvn docker:start test docker:stop' 
+                sh 'mvn test' 
             }
             post {
                 always {
