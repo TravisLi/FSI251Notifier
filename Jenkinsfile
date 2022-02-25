@@ -11,8 +11,20 @@ pipeline {
                 sh 'mvn -B -DskipTests clean package docker:build'
             }
         }
-        stage('Test') { 
+        stage('Test') {
+        	environment {
+        		azure_endpoint = credentials('azure_endpoint')
+        		azure_key = credentials('azure_key')
+        		azure_storage = credentials('azure_storage')
+        		db_host = credentials('db_host')
+        		db_user = credentials('db_user')
+        		db_password = credentials('db_password')
+        		web_user = credentials('web_user')
+        		web_password = credentials('web_password')
+        		spring.profiles.active = dev
+        	} 
             steps {
+            	echo 'Test start'
                 sh 'mvn docker:start test docker:stop' 
             }
             post {
