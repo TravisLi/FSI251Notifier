@@ -120,7 +120,7 @@
 					<certPath>/certs</certPath>
 					<images>
 						<image>
-							<name>mongo</name>
+							<name>mongo:latest</name>
 							<alias>mongodb</alias>
 							<run>
 								<env>
