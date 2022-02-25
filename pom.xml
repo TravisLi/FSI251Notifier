@@ -116,7 +116,7 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.39.0</version>
 				<configuration>
-					<dockerHost>tcp://localhost:2376</dockerHost>
+					<dockerHost>tcp://172.29.0.3:2376</dockerHost>
 					<certPath>/certs</certPath>
 					<images>
 						<image>
