@@ -128,10 +128,10 @@
 									<MONGO_INITDB_ROOT_PASSWORD>password</MONGO_INITDB_ROOT_PASSWORD>
 								</env>
 								<ports>
-									<log>Waiting for connections</log>
 									<posts>27017:27017</posts>
 								</ports>
 								<wait>
+									<log>Waiting for connections</log>
 									<time>20000</time>
 								</wait>
 							</run>
