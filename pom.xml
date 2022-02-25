@@ -128,7 +128,7 @@
 									<MONGO_INITDB_ROOT_PASSWORD>password</MONGO_INITDB_ROOT_PASSWORD>
 								</env>
 								<ports>
-									<posts>27017:27017</posts>
+									<posts>27016:27017</posts>
 								</ports>
 								<wait>
 									<log>Waiting for connections</log>
