@@ -21,7 +21,7 @@ pipeline {
         		db_password = credentials('db_password')
         		web_user = credentials('web_user')
         		web_password = credentials('web_password')
-        		spring.profiles.active = dev
+        		spring.profiles.active = 'dev'
         	} 
             steps {
             	echo 'Test start'
