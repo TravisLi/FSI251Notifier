@@ -116,8 +116,8 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.39.0</version>
 				<configuration>
-					<dockerHost>tcp://docker-jenkins:2376</dockerHost>
-					<certPath>./cert</certPath>
+					<dockerHost>tcp://727da3e171cb:2376</dockerHost>
+					<certPath>/certs</certPath>
 					<images>
 						<image>
 							<name>mongo</name>
