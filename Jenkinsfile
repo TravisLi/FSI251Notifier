@@ -25,6 +25,9 @@ pipeline {
             		reuseNode true
         		}
     		}
+    		steps {
+                echo 'DB start'
+            }
         }
         stage('Test') {
         	agent {
