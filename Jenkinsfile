@@ -13,20 +13,33 @@ pipeline {
                 sh 'mvn -B -DskipTests clean package'
             }
         }
-        stage('Test') {
-        	agent {
+        stage('Start DB for testing') {
+            agent {
         		docker {
             		image 'mongo:latest' 
             		args '-e MONGO_INITDB_ROOT_USERNAME=admin'
             		args '-e MONGO_INITDB_ROOT_PASSWORD=password'
             		args '-p 27017:27017'
+            		args '--network mongo'
+            		args '--network-alias mongodb'
+            		reuseNode true
+        		}
+    		}
+        }
+        stage('Test') {
+        	agent {
+        		docker {
+            		image 'maven:3.8.1-openjdk-17' 
+            		args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
+            		args '--network mongo'
+            		
         		}
     		}
         	environment {
         		azure_endpoint = credentials('azure_endpoint')
         		azure_key = credentials('azure_key')
         		azure_storage = credentials('azure_storage')
-        		db_host = credentials('db_host')
+        		db_host = 'mongodb'
         		db_user = credentials('db_user')
         		db_password = credentials('db_password')
         		web_user = credentials('web_user')
