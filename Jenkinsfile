@@ -1,12 +1,14 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.8.1-openjdk-17' 
-            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client' 
-        }
-    }
+    agent none
     stages {
         stage('Build') {
+            agent {
+        		docker {
+            		image 'maven:3.8.1-openjdk-17' 
+            		args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
+            		reuseNode true
+        		}
+    		}
             steps {
                 sh 'mvn -B -DskipTests clean package'
             }
