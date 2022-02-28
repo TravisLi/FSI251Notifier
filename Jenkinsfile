@@ -5,8 +5,6 @@ pipeline {
             args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
             label 'maven'
         }
-    }
-    agent {
         docker {
             image 'mongo:latest' 
             args '-e MONGO_INITDB_ROOT_USERNAME=admin'
