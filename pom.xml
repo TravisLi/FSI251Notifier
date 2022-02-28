@@ -121,7 +121,7 @@
 					<images>
 						<image>
 							<name>mongo:4.4.1</name>
-							<alias>mongo-db</alias>
+							<alias>mongodb</alias>
 							<run>
 								<env>
 									<MONGO_INITDB_ROOT_USERNAME>admin</MONGO_INITDB_ROOT_USERNAME>
