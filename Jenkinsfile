@@ -1,13 +1,27 @@
 pipeline {
-    agent none
+    agents{
+    	agent{
+    		docker {
+            	image 'maven:3.8.1-openjdk-17' 
+            	args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
+            	label 'maven'
+        	}
+    	}
+    	agent {
+        	docker {
+            	image 'mongo:latest' 
+            	args '-e MONGO_INITDB_ROOT_USERNAME=admin'
+            	args '-e MONGO_INITDB_ROOT_PASSWORD=password'
+            	args '-p 27017:27017'
+            	args '--network-alias mongodb'
+        		}
+    		}
+    	}
+    }
     stages {
         stage('Build') {
             agent {
-        		docker {
-            		image 'maven:3.8.1-openjdk-17' 
-            		args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
-            		reuseNode true
-        		}
+        		label 'maven'
     		}
             steps {
                 sh 'mvn -B -DskipTests clean package'
@@ -16,28 +30,9 @@ pipeline {
         stage('Test') {
         	failFast true
         	parallel{
-        		stage('Start DB for testing'){
-        			agent {
-        				docker {
-            				image 'mongo:latest' 
-            				args '-e MONGO_INITDB_ROOT_USERNAME=admin'
-            				args '-e MONGO_INITDB_ROOT_PASSWORD=password'
-            				args '-p 27017:27017'
-            				args '--network mongo'
-            				args '--network-alias mongodb'
-        				}
-    				}
-    				steps {
-                		echo 'DB start'
-            		}
-        		}
         		stage('Start Test'){
         			agent {
-        				docker {
-            				image 'maven:3.8.1-openjdk-17' 
-            				args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
-            				args '--network mongo'
-        				}
+        				label 'maven'
     				}
         			environment {
 		        		azure_endpoint = credentials('azure_endpoint')
@@ -56,7 +51,7 @@ pipeline {
                 		sh 'mvn test' 
             		}
             		post {
-                		always {
+                		success {
                     		junit 'target/surefire-reports/*.xml' 
                 		}
             		}
