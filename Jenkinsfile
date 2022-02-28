@@ -9,12 +9,7 @@ def withDockerNetwork(Closure inner) {
 }
 
 pipeline {
-    agent{
-    	docker {
-            image 'maven:3.8.1-openjdk-17' 
-            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
-        }
-    }
+    agent any
     stages {
         stage('Test') {
         	environment {
@@ -31,14 +26,13 @@ pipeline {
         	} 
            	steps {
             	echo 'Test start'
-            	script{
-            		withDockerNetwork{n ->
-            			docker.image('mongo:latest').withRun('-e "MONGO_INITDB_ROOT_USERNAME=admin" -e "MONGO_INITDB_ROOT_PASSWORD=password" -p 27017:27017 --network-alias mongodb')
-            		}
-            	}
+            	sh 'docker run mongo:latest -name mongodb'
                 sh 'mvn test' 
             }
             post {
+                always {
+                	sh 'docker stop mongodb'
+                }
                 success {
                     junit 'target/surefire-reports/*.xml' 
                 }
