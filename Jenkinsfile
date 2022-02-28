@@ -26,7 +26,6 @@ pipeline {
         	} 
            	steps {
             	echo 'Test start'
-            	sh 'docker run mongo:latest -name mongodb'
                 sh 'mvn test' 
             }
             post {
