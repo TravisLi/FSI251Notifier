@@ -66,12 +66,14 @@ public class EmailSender {
 		
 		List<FSI251Data> dataList = repository.findByDateRange(Util.formatLocalDate(startDate), Util.formatLocalDate(endDate));
 		
-		try {
+		dataList.stream().forEach(e->logger.info(e.toString()));
+		
+		/*try {
 			send(dataList);
 		} catch (MessagingException e) {
 			logger.error("Email cannot be sent");
 			throw e;
-		}
+		}*/
 		
 	}
 	

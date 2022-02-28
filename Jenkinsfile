@@ -28,10 +28,11 @@ pipeline {
 		        web_password = credentials('web_password')
 		        email_username = credentials('email_username')
 		        email_password = credentials('email_password')
+		        spring.profiles.active = 'dev'
         	} 
            	steps {
             	echo 'Test start'
-                sh 'mvn docker:start test docker:stop' 
+                sh 'mvn docker:start test-Dtest="EmailSenderIntegrationTest" docker:stop' 
             }
             post {
                 success {
