@@ -32,7 +32,7 @@ pipeline {
         	} 
            	steps {
             	echo 'Test start'
-                sh 'mvn docker:start test-Dtest="EmailSenderIntegrationTest" docker:stop' 
+                sh 'mvn docker:start test -Dtest="EmailSenderIntegrationTest" docker:stop' 
             }
             post {
                 success {
