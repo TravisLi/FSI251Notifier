@@ -21,7 +21,7 @@ pipeline {
 		        azure_endpoint = credentials('azure_endpoint')
 		        azure_key = credentials('azure_key')
 		        azure_storage = credentials('azure_storage')
-		        db_host = 'mongo-db'
+		        db_host = 'mongodb'
 		        db_user = credentials('db_user')
 		        db_password = credentials('db_password')
 		        web_user = credentials('web_user')
