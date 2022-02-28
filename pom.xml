@@ -123,6 +123,7 @@
 							<alias>mongodb</alias>
 							<name>mongo:4.4.12</name>
 							<run>
+								<hostname>mongodb</hostname>
 								<env>
 									<MONGO_INITDB_ROOT_USERNAME>admin</MONGO_INITDB_ROOT_USERNAME>
 									<MONGO_INITDB_ROOT_PASSWORD>password</MONGO_INITDB_ROOT_PASSWORD>
