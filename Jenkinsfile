@@ -16,11 +16,6 @@ pipeline {
         }
     }
     stages {
-        stage('Build') {
-            steps {
-                sh 'mvn -B -DskipTests clean package'
-            }
-        }
         stage('Test') {
         	environment {
 		        azure_endpoint = credentials('azure_endpoint')
@@ -37,7 +32,9 @@ pipeline {
            	steps {
             	echo 'Test start'
             	script{
-            		docker.image('mongo:latest').withRun('-e "MONGO_INITDB_ROOT_USERNAME=admin" -e "MONGO_INITDB_ROOT_PASSWORD=password" -p 27017:27017 --network-alias mongodb')
+            		withDockerNetwork{n ->
+            			docker.image('mongo:latest').withRun('-e "MONGO_INITDB_ROOT_USERNAME=admin" -e "MONGO_INITDB_ROOT_PASSWORD=password" -p 27017:27017 --network-alias mongodb')
+            		}
             	}
                 sh 'mvn test' 
             }
