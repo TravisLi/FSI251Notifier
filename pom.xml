@@ -127,10 +127,6 @@
 									<MONGO_INITDB_ROOT_USERNAME>admin</MONGO_INITDB_ROOT_USERNAME>
 									<MONGO_INITDB_ROOT_PASSWORD>password</MONGO_INITDB_ROOT_PASSWORD>
 								</env>
-								<network>
-									<mode>container</mode>
-									<name>maven-container</name>
-								</network>
 								<ports>
 									<posts>27017:27017</posts>
 								</ports>
