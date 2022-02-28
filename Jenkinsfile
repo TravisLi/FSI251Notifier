@@ -9,14 +9,19 @@ def withDockerNetwork(Closure inner) {
 }
 
 pipeline {
-    agent any
+    agent {
+    	docker {
+            image 'maven:3.8.1-openjdk-17' 
+            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
+        }
+    }
     stages {
         stage('Test') {
         	environment {
 		        azure_endpoint = credentials('azure_endpoint')
 		        azure_key = credentials('azure_key')
 		        azure_storage = credentials('azure_storage')
-		        db_host = 'mongodb'
+		        db_host = 'mongo-db'
 		        db_user = credentials('db_user')
 		        db_password = credentials('db_password')
 		        web_user = credentials('web_user')
@@ -26,12 +31,9 @@ pipeline {
         	} 
            	steps {
             	echo 'Test start'
-                sh 'mvn test' 
+                sh 'mvn docker:start test docker:stop' 
             }
             post {
-                always {
-                	sh 'docker stop mongodb'
-                }
                 success {
                     junit 'target/surefire-reports/*.xml' 
                 }
