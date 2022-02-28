@@ -14,8 +14,7 @@ pipeline {
             	args '-e MONGO_INITDB_ROOT_PASSWORD=password'
             	args '-p 27017:27017'
             	args '--network-alias mongodb'
-        		}
-    		}
+        	}
     	}
     }
     stages {
