@@ -4,6 +4,10 @@ pipeline {
             image 'maven:3.8.1-openjdk-17' 
             args '--name maven-container'
             args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
+            args '-e docker_host=tcp://172.17.0.1:2376'
+            args '-e docker_cert_path=/certs/client'
+            args '-e docker_username=travisli'
+            args '-e docker_password=${env.docker_password}'
         }
     }
     stages {
@@ -45,7 +49,7 @@ pipeline {
 				DOCKER_PASSWORD= credentials('docker_password')
     		} 
             steps {
-                sh 'mvn -Ddocker.host=${env.DOCKER_HOST} -Ddocker.cert.path=${env.DOCKER_CERT_PATH} -Ddocker.username=${env.DOCKER_USERNAME} -Ddocker.password=${env.DOCKER_PASSWORD} docker:push'
+                sh 'mvn -B docker:push'
             }
         }
     }
