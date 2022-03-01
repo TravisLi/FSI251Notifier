@@ -119,6 +119,10 @@
 				<configuration>
 					<dockerHost>tcp://172.17.0.1:2376</dockerHost>
 					<certPath>/certs/client</certPath>
+					<authConfig>
+						<username>${env.docker_username}</username>
+						<password>${env.docker_password}</password>
+					</authConfig>
 					<images>
 						<image>
 							<alias>mongodb</alias>
