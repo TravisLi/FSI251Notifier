@@ -119,10 +119,10 @@
 				<configuration>
 					<dockerHost>${env.docker_host}</dockerHost>
 					<certPath>${env.docker_cert_path}</certPath>
-					<authConfig>
+					<!-- <authConfig>
 						<username>${env.docker_username}</username>
 						<password>${env.docker_password}</password>
-					</authConfig>
+					</authConfig>-->
 					<images>
 						<image>
 							<alias>mongodb</alias>
