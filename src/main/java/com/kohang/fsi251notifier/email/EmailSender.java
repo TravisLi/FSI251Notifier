@@ -68,12 +68,12 @@ public class EmailSender {
 		
 		dataList.stream().forEach(e->logger.info(e.toString()));
 		
-		/*try {
+		try {
 			send(dataList);
 		} catch (MessagingException e) {
 			logger.error("Email cannot be sent");
 			throw e;
-		}*/
+		}
 		
 	}
 	
