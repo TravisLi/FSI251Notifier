@@ -117,8 +117,8 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.39.0</version>
 				<configuration>
-					<dockerHost>tcp://172.17.0.1:2376</dockerHost>
-					<certPath>/certs/client</certPath>
+					<dockerHost>${env.docker_host}</dockerHost>
+					<certPath>${env.docker_cert_path}</certPath>
 					<authConfig>
 						<username>${env.docker_username}</username>
 						<password>${env.docker_password}</password>
@@ -142,7 +142,7 @@
 							</run>
 						</image>
 						<image>
-							<name>docker.io/travisli/fsi251-notifier:latest</name>
+							<name>travisli/fsi251-notifier:latest</name>
 							<build>
 								<dockerFile></dockerFile>
 							</build>
