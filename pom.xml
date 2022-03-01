@@ -117,11 +117,11 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.39.0</version>
 				<configuration>
-					<dockerHost>${env.docker_host}</dockerHost>
-					<certPath>${env.docker_cert_path}</certPath>
+					<dockerHost>${docker_host}</dockerHost>
+					<certPath>${docker_cert_path}</certPath>
 					<authConfig>
-						<username>${env.docker_username}</username>
-						<password>${env.docker_password}</password>
+						<username>${docker_username}</username>
+						<password>${docker_password}</password>
 					</authConfig>
 					<images>
 						<image>

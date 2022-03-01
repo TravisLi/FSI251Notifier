@@ -48,7 +48,7 @@ pipeline {
 				docker_password = credentials('docker_password')
     		} 
             steps {
-                sh 'mvn -B docker:push'
+                sh 'mvn -B -Ddocker_host=${env.docker_host} -docker_cert_path=${env.docker_cert_path} -docker_username=${env.docker_username} -docker_password=${env.docker_password}docker:push'
             }
         }
     }
