@@ -142,7 +142,7 @@
 							</run>
 						</image>
 						<image>
-							<name>fsi251-notifier:latest</name>
+							<name>travisli/fsi251-notifier:latest</name>
 							<build>
 								<dockerFile>.</dockerFile>
 							</build>
