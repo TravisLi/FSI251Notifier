@@ -17,6 +17,11 @@ pipeline {
         }
     }
     stages {
+    	stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
         stage('Test') {
         	environment {
 		        azure_endpoint = credentials('azure_endpoint')
@@ -33,12 +38,21 @@ pipeline {
         	} 
            	steps {
             	echo 'Test start'
-                sh 'mvn docker:start test -Dtest="EmailSenderIntegrationTest" docker:stop' 
+                sh 'mvn docker:start test docker:stop' 
             }
             post {
                 success {
                     junit 'target/surefire-reports/*.xml' 
                 }
+            }
+        }
+        stage('Push') {
+      		environment {
+		        docker_username = credentials('docker_username')
+		        docker_password = credentials('docker_password')
+        	} 
+            steps {
+                sh 'mvn -B docker:push'
             }
         }
     }
