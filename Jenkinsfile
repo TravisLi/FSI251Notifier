@@ -26,10 +26,6 @@ pipeline {
 		        email_username = credentials('email_username')
 		        email_password = credentials('email_password')
 		        spring_profiles_active = 'dev'
-		        docker_host = 'tcp:////172.17.0.1:2376'
-      			docker_cert_path = '/certs/client'
-				docker_username = 'travisli'
-				docker_password = credentials('docker_password')
         	} 
            	steps {
             	echo 'Test start'
@@ -43,7 +39,7 @@ pipeline {
         }*/
         stage('Push') {
         	environment {
-      			DOCKER_HOST = 'tcp:////172.17.0.1:2376'
+      			DOCKER_HOST = 'tcp://172.17.0.1:2376'
       			DOCKER_CERT_PATH = '/certs/client'
 				DOCKER_USERNAME = 'travisli'
 				DOCKER_PASSWORD= credentials('docker_password')
