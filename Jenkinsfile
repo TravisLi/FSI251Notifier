@@ -7,7 +7,7 @@ pipeline {
             args '-e docker_host=tcp://172.17.0.1:2376'
             args '-e docker_cert_path=/certs/client'
             args '-e docker_username=travisli'
-            args '-e docker_password=${env.docker_password}'
+            args '-e docker_password=credentials("docker_password")'
         }
     }
     stages {
@@ -42,12 +42,6 @@ pipeline {
             }
         }*/
         stage('Push') {
-        	environment {
-      			DOCKER_HOST = 'tcp://172.17.0.1:2376'
-      			DOCKER_CERT_PATH = '/certs/client'
-				DOCKER_USERNAME = 'travisli'
-				DOCKER_PASSWORD= credentials('docker_password')
-    		} 
             steps {
                 sh 'mvn -B docker:push'
             }
