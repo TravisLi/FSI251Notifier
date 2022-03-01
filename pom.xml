@@ -146,6 +146,9 @@
 							<build>
 								<dockerFile>.</dockerFile>
 							</build>
+							<run>
+								<skip>true</skip>
+							</run>
 						</image>
 					</images>
 				</configuration>

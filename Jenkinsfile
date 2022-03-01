@@ -48,7 +48,7 @@ pipeline {
         }
         stage('Push') {
       		environment {
-		        docker_username = credentials('docker_username')
+		        docker_username = 'coolki@gmail.com'
 		        docker_password = credentials('docker_password')
         	} 
             steps {
