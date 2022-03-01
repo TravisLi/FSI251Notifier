@@ -13,6 +13,10 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<docker.host></docker.host>
+		<docker.cert.path></docker.cert.path>
+		<docker.username></docker.username>
+		<docker.password></docker.password>
 	</properties>
 
 	<dependencyManagement>
@@ -117,11 +121,11 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.39.0</version>
 				<configuration>
-					<dockerHost>${docker_host}</dockerHost>
-					<certPath>${docker_cert_path}</certPath>
+					<dockerHost>${docker.host}</dockerHost>
+					<certPath>${docker.cert.path}</certPath>
 					<authConfig>
-						<username>${docker_username}</username>
-						<password>${docker_password}</password>
+						<username>${docker.username}</username>
+						<password>${docker.password}</password>
 					</authConfig>
 					<images>
 						<image>
