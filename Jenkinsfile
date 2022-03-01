@@ -4,6 +4,7 @@ pipeline {
             image 'maven:3.8.1-openjdk-17' 
             args '--name maven-container'
             args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
+            args '-e docker_host="tcp://127.17.0.1:2376"'
         }
     }
     stages {
@@ -25,6 +26,10 @@ pipeline {
 		        email_username = credentials('email_username')
 		        email_password = credentials('email_password')
 		        spring_profiles_active = 'dev'
+		        docker_host = 'tcp:////172.17.0.1:2376'
+      			docker_cert_path = '/certs/client'
+				docker_username = 'travisli'
+				docker_password = credentials('docker_password')
         	} 
            	steps {
             	echo 'Test start'
