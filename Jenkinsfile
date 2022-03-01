@@ -36,7 +36,11 @@ pipeline {
                 }
             }
         }*/
-        stage('Push') { 
+        stage('Push') {
+      		environment {
+		        docker_username = 'coolki@gmail.com'
+		        docker_password = credentials('docker_password')
+        	} 
             steps {
                 sh 'mvn -B docker:push'
             }
