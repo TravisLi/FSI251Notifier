@@ -12,7 +12,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
-		<docker.registry>travisli</docker.registry>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencyManagement>
@@ -142,7 +142,7 @@
 							</run>
 						</image>
 						<image>
-							<name>${docker.registry}/fsi251-notifier:latest</name>
+							<name>fsi251-notifier:latest</name>
 							<build>
 								<contextDir>${project.basedir}</contextDir>
 							</build>
