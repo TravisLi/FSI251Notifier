@@ -6,9 +6,6 @@ pipeline {
             args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
         }
     }
-    environment {
-      	docker_host = 'tcp://172.17.0.1:2376'
-    } 
     stages {
     	stage('Build') {
             steps {
@@ -40,6 +37,12 @@ pipeline {
             }
         }*/
         stage('Push') {
+        	environment {
+      			docker_host = 'tcp://172.17.0.1:2376'
+      			docker_cert_path = '/certs/client'
+				docker_username = 'travisli'
+				docker_password = credentials('docker_password')
+    		} 
             steps {
                 sh 'mvn -B docker:push'
             }
