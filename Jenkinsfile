@@ -2,7 +2,7 @@ pipeline {
     agent {
     	docker {
             image 'maven:3.8.1-openjdk-17' 
-            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client --name maven-container -e docker_host=tcp://172.17.0.1:2376 -e docker_cert_path=/certs/client -e docker_username=travisli -e docker_password=test'
+            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client --name maven-container -e docker_host=tcp://172.17.0.1:2376 -e docker_cert_path=/certs/client'
         }
     }
     stages {
@@ -37,8 +37,12 @@ pipeline {
             }
         }*/
         stage('Push') {
+        	environment {
+		        docker_username = 'travisli'
+				docker_password = credentials('docker_password')
+        	} 
             steps {
-                sh 'mvn -B docker:push'
+                sh 'mvn -B -Ddocker.username=${docker_username} -Ddocker.password=${docker_password} docker:push'
             }
         }
     }
