@@ -6,10 +6,6 @@ pipeline {
             args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
         }
     }
-    environment {
-    	docker_username = 'coolki@gmail.com'
-		docker_password = credentials('docker_password')
-    }
     stages {
     	stage('Build') {
             steps {
