@@ -42,13 +42,13 @@ pipeline {
         }*/
         stage('Push') {
         	environment {
-      			docker_host = 'tcp:////172.17.0.1:2376'
-      			docker_cert_path = '/certs/client'
-				docker_username = 'travisli'
-				docker_password = credentials('docker_password')
+      			DOCKER_HOST = 'tcp:////172.17.0.1:2376'
+      			DOCKER_CERT_PATH = '/certs/client'
+				DOCKER_USERNAME = 'travisli'
+				DOCKER_PASSWORD= credentials('docker_password')
     		} 
             steps {
-                sh 'mvn -B -Ddocker_host=${env.docker_host} -Ddocker_cert_path=${env.docker_cert_path} -Ddocker_username=${env.docker_username} -Ddocker_password=${env.docker_password} docker:push'
+                sh 'mvn -B -Ddocker_host=${env.DOCKER_HOST} -Ddocker_cert_path=${env.DOCKER_CERT_PATH} -Ddocker_username=${env.DOCKER_USERNAME} -Ddocker_password=${env.DOCKER_PASSWORD} docker:push'
             }
         }
     }
