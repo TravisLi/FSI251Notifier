@@ -2,12 +2,7 @@ pipeline {
     agent {
     	docker {
             image 'maven:3.8.1-openjdk-17' 
-            args '--name maven-container'
-            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
-            args '-e docker_host=tcp://172.17.0.1:2376'
-            args '-e docker_cert_path=/certs/client'
-            args '-e docker_username=travisli'
-            args '-e docker_password=credentials("docker_password")'
+            args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client --name maven-container -e docker_host=tcp://172.17.0.1:2376 -e docker_cert_path=/certs/client -e docker_username=travisli -e docker_password=test'
         }
     }
     stages {
