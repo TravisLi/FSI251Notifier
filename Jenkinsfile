@@ -22,7 +22,7 @@ pipeline {
                 sh 'mvn -B -DskipTests clean package docker:build'
             }
         }
-        <!--stage('Test') {
+        /*stage('Test') {
         	environment {
 		        azure_endpoint = credentials('azure_endpoint')
 		        azure_key = credentials('azure_key')
@@ -45,7 +45,7 @@ pipeline {
                     junit 'target/surefire-reports/*.xml' 
                 }
             }
-        }-->
+        }*/
         stage('Push') {
       		environment {
 		        docker_username = 'coolki@gmail.com'
