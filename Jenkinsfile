@@ -4,7 +4,6 @@ pipeline {
             image 'maven:3.8.1-openjdk-17' 
             args '--name maven-container'
             args '-v maven_repo:/root/.m2 -v /certs/client:/certs/client'
-            args '-e docker_host="tcp://127.17.0.1:2376"'
         }
     }
     stages {
