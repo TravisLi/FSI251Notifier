@@ -13,10 +13,10 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<docker.host></docker.host>
-		<docker.cert.path></docker.cert.path>
-		<docker.username></docker.username>
-		<docker.password></docker.password>
+		<docker.host>tcp://172.17.0.1:2376</docker.host>
+		<docker.cert.path>/certs/client</docker.cert.path>
+		<docker.username>test</docker.username>
+		<docker.password>test</docker.password>
 	</properties>
 
 	<dependencyManagement>
