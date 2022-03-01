@@ -119,6 +119,7 @@
 				<configuration>
 					<dockerHost>${env.docker_host}</dockerHost>
 					<certPath>${env.docker_cert_path}</certPath>
+					<removeMode>all</removeMode>
 					<images>
 						<image>
 							<alias>mongodb</alias>
