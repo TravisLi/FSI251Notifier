@@ -137,14 +137,12 @@
 								</wait>
 							</run>
 						</image>
-						<images>
-							<image>
-								<name>${docker.registry}/fsi251-notifier:latest</name>
-								<build>
-									<contextDir>${project.basedir}</contextDir>
-								</build>
-							</image>
-						</images>
+						<image>
+							<name>${docker.registry}/fsi251-notifier:latest</name>
+							<build>
+								<contextDir>${project.basedir}</contextDir>
+							</build>
+						</image>
 					</images>
 				</configuration>
 				<executions>
