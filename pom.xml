@@ -138,6 +138,15 @@
 								</wait>
 							</run>
 						</image>
+						<image>
+							<name>travisli/fsi251-notifier:latest</name>
+							<build>
+								<contextDir>${project.basedir}</contextDir>
+							</build>
+							<run>
+								<skip>true</skip>
+							</run>
+						</image>
 					</images>
 				</configuration>
 				<executions>
