@@ -138,13 +138,6 @@
 								</wait>
 							</run>
 						</image>
-						<image>
-							<name>travisli/fsi251-notifier:latest</name>
-							<build></build>
-							<run>
-								<skip>true</skip>
-							</run>
-						</image>
 					</images>
 				</configuration>
 				<executions>
