@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+ apps:
+  image: travisli/fsi251-notifier:latest
+  name: fsi251-notifier
+  ports: 
+   - 8080:8080
+  networks:
+   - app-net
+  environment:
+   azure_end_point: https://eastus.api.cognitive.microsoft.com/
+   azure_key: dcbf720e77194a6db31c2af1cddf01c1
+   azure_storage: DefaultEndpointsProtocol=https;AccountName=fs251storage;AccountKey=5y+0o3IS2qa+Qn0zX5Mjk/ptd9PvOI7vI3XWXXuJnYDoFUU/Ypcbk5zjuyhlcGXYDWqMmuQMBOFiEqq5KJvljg==;EndpointSuffix=core.windows.net
+   db_host: mongo
+   db_password: password
+   db_user: admin
+   email_password: alpfdjofwxqmlbhb
+   email_username: burningcoolki@gmail.com
+   spring.profiles.active: prog
+   web_password: kohangadmin
+   web_user: kohang
+
+ mongo:
+  image: mongo:latest
+  volumes: 
+   - mongo_db:/data/db
+  networks:
+   - app-net
+  environment:
+   MONGO_INITDB_ROOT_USERNAME: admin
+   MONGO_INITDB_ROOT_PASSWORD: password
+ 
+volumes:
+ mongo_db:
+
+networks:
+ app-net:
+  name: app-net
