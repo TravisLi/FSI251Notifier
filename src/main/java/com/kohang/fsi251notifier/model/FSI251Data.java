@@ -13,8 +13,6 @@ public class FSI251Data {
 	private String certNo;
 	private String certDate;
 	private String fileName;
-	private String streetNo;
-	private String streetName;
 	
 	public FSI251Data() {
 		
@@ -56,18 +54,6 @@ public class FSI251Data {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
-	public String getStreetNo() {
-		return streetNo;
-	}
-	public void setStreetNo(String streetNo) {
-		this.streetNo = streetNo;
-	}
-	public String getStreetName() {
-		return streetName;
-	}
-	public void setStreetName(String streetName) {
-		this.streetName = streetName;
-	}
 	
 	public String getId() {
 		return Id;
@@ -78,8 +64,7 @@ public class FSI251Data {
 	@Override
 	public String toString() {
 		return "FSI251Data [buildingName=" + buildingName + ", clientName=" + clientName + ", certNo=" + certNo
-				+ ", certDate=" + certDate + ", fileName=" + fileName + ", streetNo=" + streetNo + ", streetName="
-				+ streetName + "]";
+				+ ", certDate=" + certDate + ", fileName=" + fileName + "]";
 	}
 	
 }
