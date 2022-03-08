@@ -25,12 +25,10 @@ public class FSI251Recognizer {
 
 	private static final Logger logger = LoggerFactory.getLogger(FSI251Recognizer.class);
 	private static final String MODEL_ID = "FSI251";
-	private static final String BUILDING_KEY = "Building";
-	private static final String CLIENT_KEY = "Client";
-	private static final String CERT_NO_KEY = "CertNo";
-	private static final String CERT_DATE_KEY = "CertDate";
-	private static final String STREET_NAME_KEY = "StreetName";
-	private static final String STREET_NO_KEY = "StreetNo";
+	private static final String BUILDING_KEY = "buildingName";
+	private static final String CLIENT_KEY = "clientName";
+	private static final String CERT_NO_KEY = "certNo";
+	private static final String CERT_DATE_KEY = "certDate";
 
 	private final DocumentAnalysisClient client;
 	private final FSI251Repository repository;
@@ -109,12 +107,6 @@ public class FSI251Recognizer {
 					break;
 				case CERT_DATE_KEY:
 					data.setCertDate(documentField.getContent());
-					break;
-				case STREET_NAME_KEY:
-					data.setStreetName(documentField.getContent());
-					break;
-				case STREET_NO_KEY:
-					data.setStreetNo(documentField.getContent());
 					break;
 
 				}

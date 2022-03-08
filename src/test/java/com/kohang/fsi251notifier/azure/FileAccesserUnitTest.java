@@ -22,7 +22,7 @@ import com.kohang.fsi251notifier.util.TestUtil;
 
 @SpringBootTest(classes = {FileAccesser.class})
 @TestMethodOrder(OrderAnnotation.class)
-public class FileAccesserTest {
+public class FileAccesserUnitTest {
 		
 	@Autowired
 	private FileAccesser fileAccesser;

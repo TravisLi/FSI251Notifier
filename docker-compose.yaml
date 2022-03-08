@@ -3,7 +3,6 @@ version: "3.7"
 services:
  apps:
   image: travisli/fsi251-notifier:latest
-  name: fsi251-notifier
   ports: 
    - 8080:8080
   networks:

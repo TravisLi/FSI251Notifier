@@ -42,7 +42,18 @@ public class FileAccesser {
 		
 		ShareClient shareClient = new ShareServiceClientBuilder().connectionString(storageConnectionStr).buildClient().getShareClient(SHARE_FILE_NAME);	
 		this.sourceDirClient = shareClient.getDirectoryClient(SOURCE_DIR);
-		this.processDirClient = shareClient.getDirectoryClient(PROCESSED_DIR); 
+		
+		//create the folder if the folder does not exist
+		if(!this.sourceDirClient.exists()) {
+			this.sourceDirClient.create();
+		}
+		
+		this.processDirClient = shareClient.getDirectoryClient(PROCESSED_DIR);
+		
+		//create the folder if the folder does not exist
+		if(!this.processDirClient.exists()) {
+			this.processDirClient.create();
+		}
 		
 	}
 		

@@ -8,7 +8,7 @@ pipeline {
     stages {
     	stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean package docker:build'
+                sh 'mvn -B -DskipTests clean package'
             }
         }
         stage('Test') {
@@ -26,12 +26,12 @@ pipeline {
 		        spring_profiles_active = 'dev'
         	} 
            	steps {
-            	echo 'Test start'
-                sh 'mvn docker:start test docker:stop' 
+                sh 'mvn verify' 
             }
             post {
                 success {
-                    junit 'target/surefire-reports/*.xml' 
+                    junit 'target/*-reports/*.xml'
+                    
                 }
             }
         }

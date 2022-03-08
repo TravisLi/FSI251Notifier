@@ -30,7 +30,7 @@
 				<version>2.6.3</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
+			</dependency>	
 		</dependencies>
 	</dependencyManagement>
 
@@ -107,10 +107,27 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M3</version>
+				<configuration>
+					<includes>
+						<include>**/*UnitTest.java</include>
+					</includes>
+					<excludes>
+						<excludes>**/*IntegrationTest.java</excludes>
+					</excludes>
+				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>3.0.0-M5</version>
+				<configuration>
+					<includes>
+						<include>**/*IntegrationTest.java</include>
+					</includes>
+					<excludes>
+						<excludes>**/*UnitTest.java</excludes>
+					</excludes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>io.fabric8</groupId>
@@ -124,6 +141,10 @@
 						<image>
 							<alias>mongodb</alias>
 							<name>mongo:4.4.12</name>
+							<build>
+								<skip>true</skip>
+								<skipPush>true</skipPush>
+							</build>
 							<run>
 								<env>
 									<MONGO_INITDB_ROOT_USERNAME>admin</MONGO_INITDB_ROOT_USERNAME>
@@ -139,9 +160,19 @@
 							</run>
 						</image>
 						<image>
-							<name>travisli/fsi251-notifier:latest</name>
+							<name>travisli/${project.artifactId}:${project.version}</name>
 							<build>
-								<contextDir>${project.basedir}</contextDir>
+								<from>openjdk:17-jdk-alpine</from>
+								<tags>
+									<tag>latest</tag>
+								</tags>
+								<assembly>
+									<descriptorRef>artifact</descriptorRef>
+									<targetDir>/app</targetDir>
+								</assembly>
+								<entryPoint>
+									java -jar /app/${project.artifactId}:${project.version}.jar
+								</entryPoint>
 							</build>
 							<run>
 								<skip>true</skip>
@@ -151,19 +182,32 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>start</id>
-						<phase>pre-integration-test</phase>
+						<id>build docker image</id>
+						<phase>package</phase>
 						<goals>
 							<!-- "build" should be used to create the images with the artifact -->
 							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>start docker image</id>
+						<phase>pre-integration-test</phase>
+						<goals>
 							<goal>start</goal>
 						</goals>
 					</execution>
 					<execution>
-						<id>stop</id>
+						<id>stop docker image</id>
 						<phase>post-integration-test</phase>
 						<goals>
 							<goal>stop</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>push docker image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>remove</goal>
 						</goals>
 					</execution>
 				</executions>
