@@ -180,7 +180,7 @@
 									<targetDir>/app</targetDir>
 								</assembly>
 								<entryPoint>
-									java -jar /app/${project.artifactId}:${project.version}.jar
+									java -jar /app/${project.artifactId}-${project.version}.jar
 								</entryPoint>
 							</build>
 							<run>
