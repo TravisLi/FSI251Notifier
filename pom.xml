@@ -54,6 +54,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
@@ -75,6 +79,16 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-storage-file-share</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-identity</artifactId>
+		</dependency>
+		<dependency>
+			<!-- Include the sdk as a dependency -->
+			<groupId>com.microsoft.graph</groupId>
+			<artifactId>microsoft-graph</artifactId>
+			<version>5.16.0</version>
 		</dependency>
 		<!-- Java -->
 		<dependency>
