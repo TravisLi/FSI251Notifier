@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
-import com.kohang.fsi251notifier.azure.FileAccesser;
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 import com.kohang.fsi251notifier.util.TestUtil;
@@ -34,7 +34,7 @@ public class EmailSenderUnitTest {
 	private String password;
 	
 	@Mock
-	private FileAccesser fileAccesser;
+	private AzureFileAccesser azureFileAccesser;
 	
 	@Mock
 	private FSI251Repository repository;
@@ -59,9 +59,9 @@ public class EmailSenderUnitTest {
 			File sampleFile2 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_2).getFile();
 			sampleFile2Baos.writeBytes(Files.readAllBytes(sampleFile2.toPath()));
 			
-			when(fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE)).thenReturn(sampleFileBaos);
-			when(fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE_1)).thenReturn(sampleFileBaos);
-			when(fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE_2)).thenReturn(sampleFileBaos);
+			when(azureFileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE)).thenReturn(sampleFileBaos);
+			when(azureFileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE_1)).thenReturn(sampleFileBaos);
+			when(azureFileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE_2)).thenReturn(sampleFileBaos);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,9 +94,9 @@ public class EmailSenderUnitTest {
 	@Test
 	public void runTest() {
 				
-		EmailSender emailSender = new EmailSender(username, password, "test", fileAccesser, repository);
+		EmailSender emailSender = new EmailSender(username, password, "test", azureFileAccesser, repository);
 		
-		assertDoesNotThrow(()->emailSender.run());
+		assertDoesNotThrow(emailSender::run);
 				
 	}
 	

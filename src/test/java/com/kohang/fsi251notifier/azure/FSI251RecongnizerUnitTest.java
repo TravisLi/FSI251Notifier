@@ -36,7 +36,7 @@ import com.kohang.fsi251notifier.util.TestUtil;
 public class FSI251RecongnizerUnitTest {
 
 	@Mock
-	private FileAccesser accesser;
+	private AzureFileAccesser accesser;
 
 	@Mock
 	private FSI251Repository repository;

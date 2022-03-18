@@ -21,7 +21,7 @@ import com.kohang.fsi251notifier.util.TestUtil;
 public class FSI251RecongnizerIntegrationTest {
 
 	@Autowired
-	private FileAccesser fileAccesser;
+	private AzureFileAccesser fileAccesser;
 
 	@Autowired
 	private ResourceLoader resourceLoader;

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>File Import List Page</title>
+</head>
+<body>
+	<div>
+    	Welcome <span th:text="${user.getUsername()}"></span>
+    </div>
+	<table>
+        <tr>
+            <td>File Name</td>
+        </tr>
+        <tr th:each="f: ${fileList}">
+            <td th:text="${f}"></td>
+        </tr>
+    </table>
+    <form th:action="@{/logout}" method="post">
+        <div>
+            <input type="submit" value="Logout"/>
+        </div>
+    </form>
+</body>
+</html>

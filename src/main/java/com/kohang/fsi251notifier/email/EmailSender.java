@@ -22,14 +22,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.kohang.fsi251notifier.azure.FileAccesser;
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 import com.kohang.fsi251notifier.util.Util;
 
 @Component
+@EnableScheduling
 public class EmailSender {
 
 	private static final Logger logger = LoggerFactory.getLogger(EmailSender.class); 
@@ -46,11 +49,11 @@ public class EmailSender {
 	private final String password;
 	private final String env;
 	
-	private FileAccesser fileAccesser;
+	private AzureFileAccesser fileAccesser;
 	private FSI251Repository repository;
 
 	@Autowired
-	public EmailSender(@Value("${email_username}")String username,@Value("${email_password}")String password, @Value("${spring.profiles.active}")String env, FileAccesser f, FSI251Repository r) {
+	public EmailSender(@Value("${email_username}")String username, @Value("${email_password}")String password, @Value("${spring.profiles.active}")String env, AzureFileAccesser f, FSI251Repository r) {
 		this.username = username;
 		this.password = password;
 		this.env = env;
@@ -58,16 +61,20 @@ public class EmailSender {
 		this.repository = r;
 	}
 
+	//prod: 0 0 1 * * execute at 00:00 1st of every month
+	//test: * * * * *
+	@Scheduled(cron = "${send.email.cron}")
 	public void run() throws MessagingException {
-		
+
+		//finding those certs with created last year with next month
+		//for example today is 1-Mar-2022, we look for the certs created in 1-Apr-2021 to 30-Apr-2021
 		LocalDate today = LocalDate.now();
-		LocalDate startDate = LocalDate.of(today.getYear(), today.getMonth(), 1);
-		LocalDate endDate = LocalDate.of(today.getYear(), today.getMonth(), today.lengthOfMonth());
+		LocalDate lastYearNextMonth = today.minusYears(1).minusMonths(-1);
+		LocalDate startDate = lastYearNextMonth.withDayOfMonth(1);
+		LocalDate endDate = lastYearNextMonth.withDayOfMonth(lastYearNextMonth.lengthOfMonth());
 		
 		List<FSI251Data> dataList = repository.findByDateRange(Util.formatLocalDate(startDate), Util.formatLocalDate(endDate));
-		
-		dataList.stream().forEach(e->logger.info(e.toString()));
-		
+
 		try {
 			send(dataList);
 		} catch (MessagingException e) {
@@ -106,8 +113,12 @@ public class EmailSender {
 			Multipart multipart = new MimeMultipart();
 			multipart.addBodyPart(mimeBodyPart);
 
+			boolean sendEmail = false;
+
 			for(FSI251Data data: list) {
-				
+
+				sendEmail = true;
+
 				try {
 					
 					if(data.getFileName()!=null) {
@@ -133,13 +144,17 @@ public class EmailSender {
 					
 				} catch (IOException e) {
 					e.printStackTrace();
-					logger.error("Attachement Preparation Error");
+					logger.error("Attachment Preparation Error");
 				}
 			}
 
 			message.setContent(multipart);
 
-			Transport.send(message, username, password);
+			//only send email if ther are content
+			if(sendEmail){
+				logger.info("Sending Email...");
+				Transport.send(message, username, password);
+			}
 
 		} catch (MessagingException e) {
 			e.printStackTrace();
@@ -150,9 +165,7 @@ public class EmailSender {
 			for(File file: fileList) {
 				logger.debug("Deleting file " + file.getAbsolutePath() + " result:" + file.delete());
 			}
-			
 		}
-
 	}
 
 	private String buildHTMLTable(List<FSI251Data> list) {

@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 
 @Component
+@EnableScheduling
 public class FSI251Recognizer {
 
 	private static final Logger logger = LoggerFactory.getLogger(FSI251Recognizer.class);
@@ -32,10 +35,10 @@ public class FSI251Recognizer {
 
 	private final DocumentAnalysisClient client;
 	private final FSI251Repository repository;
-	private final FileAccesser accesser;
+	private final AzureFileAccesser accesser;
 
 	@Autowired
-	public FSI251Recognizer(@Value("${azure_key}")String key, @Value("${azure_endpoint}")String endpoint, FileAccesser fa, FSI251Repository r) {
+	public FSI251Recognizer(@Value("${azure_key}")String key, @Value("${azure_endpoint}")String endpoint, AzureFileAccesser fa, FSI251Repository r) {
 		this.client = new DocumentAnalysisClientBuilder()
 				.credential(new AzureKeyCredential(key))
 				.endpoint(endpoint)
@@ -46,10 +49,11 @@ public class FSI251Recognizer {
 
 	//save cert file to DB, run once a day
 	@Transactional
+	@Scheduled(cron = "${recognition.cron}")
 	public List<FSI251Data> run(){
 		logger.info("run start");
 
-		List<FSI251Data> resultList = new ArrayList<FSI251Data>();
+		List<FSI251Data> resultList = new ArrayList<>();
 		List<String> srcFiles = accesser.getSrcFiles();
 
 		for(String fileName : srcFiles) {
@@ -94,21 +98,11 @@ public class FSI251Recognizer {
 
 			documentFieldMap.forEach((key, documentField) -> {
 
-				switch(key) {
-
-				case BUILDING_KEY:
-					data.setBuildingName(documentField.getContent());
-					break;
-				case CLIENT_KEY:
-					data.setClientName(documentField.getContent());
-					break;
-				case CERT_NO_KEY:
-					data.setCertNo(documentField.getContent());
-					break;
-				case CERT_DATE_KEY:
-					data.setCertDate(documentField.getContent());
-					break;
-
+				switch (key) {
+					case BUILDING_KEY -> data.setBuildingName(documentField.getContent());
+					case CLIENT_KEY -> data.setClientName(documentField.getContent());
+					case CERT_NO_KEY -> data.setCertNo(documentField.getContent());
+					case CERT_DATE_KEY -> data.setCertDate(documentField.getContent());
 				}
 			});
 

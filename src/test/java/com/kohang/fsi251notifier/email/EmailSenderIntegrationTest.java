@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
-import com.kohang.fsi251notifier.azure.FileAccesser;
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.util.TestUtil;
 
 @SpringBootTest
@@ -27,7 +27,7 @@ public class EmailSenderIntegrationTest {
 	private EmailSender emailSender;
 	
 	@Autowired
-	private FileAccesser fileAccesser;
+	private AzureFileAccesser fileAccesser;
 
 	@Autowired
 	private ResourceLoader resourceLoader;
