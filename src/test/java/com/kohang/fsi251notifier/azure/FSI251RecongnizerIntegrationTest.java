@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import com.kohang.fsi251notifier.repository.FSI251Repository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -29,10 +30,15 @@ public class FSI251RecongnizerIntegrationTest {
 	@Autowired
 	private FSI251Recognizer fsi251Recognizer;
 
+	@Autowired
+	private FSI251Repository repository;
+
 	@BeforeAll
 	public void uploadSampleFile() {
 
 		try {
+
+			repository.deleteAll();
 
 			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();			
 			fileAccesser.uploadToSrcFolder(file);
@@ -57,6 +63,10 @@ public class FSI251RecongnizerIntegrationTest {
 		}
 		
 		assertNotNull(expect);
+
+		FSI251Data data = repository.findByCertNo(expect.getCertNo());
+
+		assertNotNull(data);
 	}
 
 }

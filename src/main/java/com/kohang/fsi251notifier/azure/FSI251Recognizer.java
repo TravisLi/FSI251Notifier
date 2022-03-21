@@ -61,18 +61,20 @@ public class FSI251Recognizer {
 			logger.debug(fileName);
 			
 			FSI251Data data = analyzeDocument(fileName);
-			
-			FSI251Data dataInDb =  repository.findByCertNo(data.getCertNo());
-			
-			if(dataInDb==null) {
-				
-				repository.save(data);
-				
-			}else {
-				logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
+
+			//if the document does not contain cert no and cert date, will skip the check
+			if(data.getCertNo()!=null&&data.getCertDate()!=null) {
+
+				FSI251Data dataInDb = repository.findByCertNo(data.getCertNo());
+
+				if (dataInDb == null) {
+					repository.save(data);
+				} else {
+					logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
+				}
+
+				resultList.add(data);
 			}
-			
-			resultList.add(data);
 
 		}
 
