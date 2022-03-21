@@ -44,9 +44,9 @@ public class FSI251RecongnizerUnitTest {
 	@Autowired
 	private ResourceLoader resourceLoader;
 
-	@Value("${azure_key}")
+	@Value("${azure_recognition_key}")
 	private String azureKey;
-	@Value("${azure_endpoint}")
+	@Value("${azure_recognition_endpoint}")
 	private String azureEndPoint;
 
 	private List<String> fileList = List.of(TestUtil.SAMPLE_FILE, TestUtil.SAMPLE_FILE_1, TestUtil.SAMPLE_FILE_2);

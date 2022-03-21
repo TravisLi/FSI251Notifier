@@ -38,7 +38,7 @@ public class FSI251Recognizer {
 	private final AzureFileAccesser accesser;
 
 	@Autowired
-	public FSI251Recognizer(@Value("${azure_key}")String key, @Value("${azure_endpoint}")String endpoint, AzureFileAccesser fa, FSI251Repository r) {
+	public FSI251Recognizer(@Value("${azure_recognition_key}")String key, @Value("${azure_recognition_endpoint}")String endpoint, AzureFileAccesser fa, FSI251Repository r) {
 		this.client = new DocumentAnalysisClientBuilder()
 				.credential(new AzureKeyCredential(key))
 				.endpoint(endpoint)
