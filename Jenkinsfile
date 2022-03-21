@@ -16,6 +16,7 @@ pipeline {
 		        azure_recognition_endpoint = credentials('azure_recognition_endpoint')
 		        azure_recognition_key = credentials('azure_recognition_key')
 		        azure_storage = credentials('azure_storage')
+		        azure_client_id = credentials('azure_client_id')
 		        azure_client_secret = credentials('azure_client_secret')
 		        azure_tenant_id = credentials('azure_tenant_id')
 		        onedrive_share_url = credentials('onedrive_share_url')
