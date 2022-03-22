@@ -9,10 +9,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
@@ -23,13 +26,15 @@ import com.kohang.fsi251notifier.util.TestUtil;
 @SpringBootTest(classes = {AzureFileAccesser.class})
 @TestMethodOrder(OrderAnnotation.class)
 public class AzureFileAccesserUnitTest {
-		
+
+	private static final Logger logger = LoggerFactory.getLogger(AzureFileAccesser.class);
+
 	@Autowired
 	private AzureFileAccesser fileAccesser;
 	
 	@Autowired
 	private ResourceLoader resourceLoader;
-	
+
 	@Test
 	@Order(1)
 	public void testUploadFile() {
@@ -64,7 +69,7 @@ public class AzureFileAccesserUnitTest {
 	@Order(4)
 	public void testCopyAndDeleteFiles() {
 		
-		List<String> nameList = new ArrayList<String>();
+		List<String> nameList = new ArrayList<>();
 		nameList.add(TestUtil.SAMPLE_FILE);
 		
 		fileAccesser.copyAndDeleteFiles(nameList);
@@ -96,6 +101,24 @@ public class AzureFileAccesserUnitTest {
 		
 	    assertTrue(actualMessage.contains(expectedMessage));
 		
+	}
+
+	@Test
+	@Order(7)
+	public void testAllFilesInSrcFolderAreDelete() {
+
+		try {
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
+			assertFalse(fileAccesser.uploadToSrcFolder(file).isEmpty());
+
+			fileAccesser.deleteAllFilesInSrcFolder();
+
+			assertTrue(fileAccesser.getSrcFiles().isEmpty());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 }

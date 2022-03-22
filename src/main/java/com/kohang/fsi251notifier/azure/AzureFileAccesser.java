@@ -89,6 +89,16 @@ public class AzureFileAccesser {
 		return pc.getFileUrl();
 		
 	}
+
+	public void deleteAllFilesInSrcFolder(){
+
+		getSrcFiles().forEach(name->{
+
+			ShareFileClient sc = sourceDirClient.getFileClient(name);
+			sc.delete();
+
+		});
+	}
 	
 	public void copyAndDeleteFiles(List<String> nameList) {
 		

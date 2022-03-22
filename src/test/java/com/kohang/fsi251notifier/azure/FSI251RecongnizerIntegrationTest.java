@@ -10,6 +10,7 @@ import com.kohang.fsi251notifier.repository.FSI251Repository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
@@ -38,10 +39,15 @@ public class FSI251RecongnizerIntegrationTest {
 
 		try {
 
+			//prevent too many files copied by One drive file accesser
+			fileAccesser.deleteAllFilesInSrcFolder();
 			repository.deleteAll();
 
 			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();			
-			fileAccesser.uploadToSrcFolder(file);
+
+			if(file.exists()){
+				fileAccesser.uploadToSrcFolder(file);
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
