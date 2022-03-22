@@ -23,7 +23,6 @@ import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 
 @Component
-@EnableScheduling
 public class FSI251Recognizer {
 
 	private static final Logger logger = LoggerFactory.getLogger(FSI251Recognizer.class);
@@ -49,7 +48,6 @@ public class FSI251Recognizer {
 
 	//save cert file to DB, run once a day
 	@Transactional
-	@Scheduled(cron = "${recognition.cron}")
 	public List<FSI251Data> run(){
 		logger.info("run start");
 
@@ -58,7 +56,7 @@ public class FSI251Recognizer {
 
 		for(String fileName : srcFiles) {
 			
-			logger.debug(fileName);
+			logger.info("Working on file: " + fileName);
 			
 			FSI251Data data = analyzeDocument(fileName);
 
@@ -68,6 +66,7 @@ public class FSI251Recognizer {
 				FSI251Data dataInDb = repository.findByCertNo(data.getCertNo());
 
 				if (dataInDb == null) {
+					logger.info("Save the record to DB");
 					repository.save(data);
 				} else {
 					logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
@@ -84,6 +83,8 @@ public class FSI251Recognizer {
 	}
 
 	private FSI251Data analyzeDocument(String fileName) {
+
+		logger.info("Recognizing in Azure");
 
 		ByteArrayOutputStream os = accesser.getSrcFileByteArrayOutputStream(fileName);
 

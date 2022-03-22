@@ -8,8 +8,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import com.azure.storage.blob.models.ParallelTransferOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +30,7 @@ import com.azure.storage.file.share.models.ShareFileUploadInfo;
 @Component
 public class AzureFileAccesser {
 
-	private static Logger logger = LoggerFactory.getLogger(AzureFileAccesser.class);
+	private static final Logger logger = LoggerFactory.getLogger(AzureFileAccesser.class);
 	
 	private static final String SHARE_FILE_NAME = "fsi251file";
 	private static final String SOURCE_DIR = "source";
@@ -45,6 +47,7 @@ public class AzureFileAccesser {
 		
 		//create the folder if the folder does not exist
 		if(!this.sourceDirClient.exists()) {
+			logger.info("Source directory is missing, create a new one");
 			this.sourceDirClient.create();
 		}
 		
@@ -52,14 +55,17 @@ public class AzureFileAccesser {
 		
 		//create the folder if the folder does not exist
 		if(!this.processDirClient.exists()) {
+			logger.info("Processed directory is missing, create a new one");
 			this.processDirClient.create();
 		}
 		
 	}
 		
 	public List<String> getSrcFiles(){
-		
-		List<String> resultList = new ArrayList<String>();
+
+		logger.info("Getting all files is src folder");
+
+		List<String> resultList = new ArrayList<>();
 				
 		sourceDirClient.listFilesAndDirectories().forEach(item->{
 			
@@ -86,7 +92,7 @@ public class AzureFileAccesser {
 	
 	public void copyAndDeleteFiles(List<String> nameList) {
 		
-		nameList.stream().forEach(name->{
+		nameList.forEach(name->{
 			
 			ShareFileClient sc = sourceDirClient.getFileClient(name);
 			ShareFileClient pc = processDirClient.createFile(name, MAX_SIZE);
@@ -148,24 +154,40 @@ public class AzureFileAccesser {
 		return "";
 		
 	}
+
+	public List<String> uploadToSrcFolder(List<File> fileList){
+
+		List<String> fileNameList = new LinkedList<>();
+		fileList.forEach(f->{
+			String result = uploadToSrcFolder(f);
+			if(!result.isEmpty()){
+				fileNameList.add(f.getName());
+			}
+			if(f.exists()){
+				f.delete();
+			}
+		});
+
+		return fileNameList;
+	}
 	
 	public String uploadToProcessFolder(File file) {
 		
 		ShareFileClient pc = processDirClient.createFile(file.getName(), file.length());
-		
-		InputStream uploadData;
+
 		try {
-			uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+			InputStream uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
 			ShareFileUploadInfo response = pc.uploadRange(uploadData, file.length());
 			return response.getETag();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
+
 		return "";
 		
 	}
+
+
 	
 }

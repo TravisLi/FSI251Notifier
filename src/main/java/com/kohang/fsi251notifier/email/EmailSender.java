@@ -32,7 +32,6 @@ import com.kohang.fsi251notifier.repository.FSI251Repository;
 import com.kohang.fsi251notifier.util.Util;
 
 @Component
-@EnableScheduling
 public class EmailSender {
 
 	private static final Logger logger = LoggerFactory.getLogger(EmailSender.class); 
@@ -49,8 +48,8 @@ public class EmailSender {
 	private final String password;
 	private final String env;
 	
-	private AzureFileAccesser fileAccesser;
-	private FSI251Repository repository;
+	private final AzureFileAccesser fileAccesser;
+	private final FSI251Repository repository;
 
 	@Autowired
 	public EmailSender(@Value("${email_username}")String username, @Value("${email_password}")String password, @Value("${spring.profiles.active}")String env, AzureFileAccesser f, FSI251Repository r) {
@@ -61,9 +60,7 @@ public class EmailSender {
 		this.repository = r;
 	}
 
-	//prod: 0 0 1 * * execute at 00:00 1st of every month
-	//test: * * * * *
-	@Scheduled(cron = "${send.email.cron}")
+
 	public void run() throws MessagingException {
 
 		//finding those certs with created last year with next month
@@ -72,7 +69,8 @@ public class EmailSender {
 		LocalDate lastYearNextMonth = today.minusYears(1).minusMonths(-1);
 		LocalDate startDate = lastYearNextMonth.withDayOfMonth(1);
 		LocalDate endDate = lastYearNextMonth.withDayOfMonth(lastYearNextMonth.lengthOfMonth());
-		
+
+		logger.info("Finding certs between " + Util.formatLocalDate(startDate) + " to " + Util.formatLocalDate(endDate));
 		List<FSI251Data> dataList = repository.findByDateRange(Util.formatLocalDate(startDate), Util.formatLocalDate(endDate));
 
 		try {
@@ -96,12 +94,12 @@ public class EmailSender {
 
 		Message message = new MimeMessage(session);
 		
-		List<File> fileList = new LinkedList<File>();
+		List<File> fileList = new LinkedList<>();
 		
 		try {
 			message.setFrom(new InternetAddress(username));
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(OFFICE_EMAIL));
-			message.setSubject(env!=null && env.equals("prog")?EMAIL_SUBJECT:EMAIL_SUBJECT+TESTING_KEY_WORD);
+			message.setSubject(env!=null && env.equals("prod")?EMAIL_SUBJECT:EMAIL_SUBJECT+TESTING_KEY_WORD);
 
 			StringBuilder builder = new StringBuilder();
 			builder.append(MESSAGE);
@@ -178,10 +176,8 @@ public class EmailSender {
 			LocalDate certDate;
 			try {
 				certDate = Util.convertDateStrToLocalDate(data.getCertDate());
-				
-				if(certDate!=null) {
-					builder.append(String.format(HTML_TABLE_ROW_TEMPLATE, data.getCertNo(), Util.formatLocalDate(Util.getCertExpiryDate(certDate))));
-				}
+
+				builder.append(String.format(HTML_TABLE_ROW_TEMPLATE, data.getCertNo(), Util.formatLocalDate(Util.getCertExpiryDate(certDate))));
 				
 			} catch (Exception e) {
 				logger.error("Cert Date Conversion Error");
@@ -190,7 +186,7 @@ public class EmailSender {
 			
 		}
 
-		return String.format(HTML_TABLE_TEMPLATE, builder.toString());
+		return String.format(HTML_TABLE_TEMPLATE, builder);
 	}
 
 }

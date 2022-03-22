@@ -19,7 +19,7 @@ public class Util {
 		
 		if(dateArray.length==3) {
 
-			logger.debug(String.format("Day:%s, Month:%s, Year:%s",dateArray[2],dateArray[1],dateArray[1]));
+			logger.debug(String.format("Day:%s, Month:%s, Year:%s",dateArray[0],dateArray[1],dateArray[2]));
 
 			certDate = LocalDate.of(Integer.valueOf(dateArray[2]), Integer.valueOf(dateArray[1]), Integer.valueOf(dateArray[0]));
 

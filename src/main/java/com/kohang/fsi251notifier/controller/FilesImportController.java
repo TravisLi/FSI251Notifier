@@ -21,11 +21,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Controller
-@EnableScheduling
 @RequestMapping("/import")
 public class FilesImportController {
 
-	private static Logger logger = LoggerFactory.getLogger(FilesImportController.class);
+	private static final Logger logger = LoggerFactory.getLogger(FilesImportController.class);
 
 	private final AzureFileAccesser azureFileAccesser;
 	private final OneDriveFileAccesser oneDriveFileAccesser;
@@ -38,36 +37,15 @@ public class FilesImportController {
 	
 	@GetMapping
 	public String importFiles(@AuthenticationPrincipal User user, Model model){
+		logger.info("Import All File Start");
 		List<File> fileList = oneDriveFileAccesser.getFilesByDriveItems(oneDriveFileAccesser.getAllDriveItemsInRootFolder());
-		List<String> fileNameList = copyFilesToAzureDrive(fileList);
+		List<String> fileNameList = azureFileAccesser.uploadToSrcFolder(fileList);
 		model.addAttribute("fileList", fileNameList);
 		model.addAttribute("user",user);
-
 		return "fileImportList";
 	}
 
-	@Scheduled(cron = "${import.file.cron}")
-	public void importFilesDaily(){
-		logger.info("File Import File Daily Start");
-		LocalDate createDate = LocalDate.now();
-		List<File> fileList = oneDriveFileAccesser.getFilesByDriveItems(oneDriveFileAccesser.getAllDriveItemsInRootFolderWithCreateDate(createDate));
-		copyFilesToAzureDrive(fileList);
-	}
 
-	private List<String> copyFilesToAzureDrive(List<File> fileList){
 
-		List<String> fileNameList = new LinkedList<String>();
-		fileList.stream().forEach(f->{
-			String result = azureFileAccesser.uploadToSrcFolder(f);
-			if(!result.isEmpty()){
-				fileNameList.add(new String(f.getName()));
-			}
-			if(f.exists()){
-				f.exists();
-			}
-		});
 
-		return fileNameList;
-	}
-	
 }
