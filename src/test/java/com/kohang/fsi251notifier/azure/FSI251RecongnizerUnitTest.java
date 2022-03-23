@@ -1,7 +1,6 @@
 package com.kohang.fsi251notifier.azure;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -93,19 +92,15 @@ public class FSI251RecongnizerUnitTest {
 				
 		List<FSI251Data> dataList = fsi251Recognizer.run();
 
-		@SuppressWarnings("unchecked")
-		ArgumentCaptor<List<String>> ac = ArgumentCaptor.forClass(List.class);
-		
 		//then
 		verify(repository, times(0)).save(any());
 		
-		verify(accesser).copyAndDeleteFiles(ac.capture());
-		
-		assertTrue(dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO)).toList().size()==1);
-		assertTrue(dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_1)).toList().size()==1);
-		assertTrue(dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_2)).toList().size()==1);
-		
-		assertEquals(ac.getValue(), fileList);
+		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(0).getFileName());
+		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(1).getFileName());
+		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(2).getFileName());
+
+		assertTrue(dataList.size()==0);
+
 	}
 	
 	@Test
@@ -128,14 +123,15 @@ public class FSI251RecongnizerUnitTest {
 		
 		//then
 		verify(repository, times(3)).save(any());
-		
-		verify(accesser).copyAndDeleteFiles(ac.capture());
-		
+
+		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(0).getFileName());
+		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(1).getFileName());
+		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(2).getFileName());
+
 		assertTrue(dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO)).toList().size()==1);
 		assertTrue(dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_1)).toList().size()==1);
 		assertTrue(dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_2)).toList().size()==1);
-		
-		assertEquals(ac.getValue(), fileList);
+
 	}
 	
 	
