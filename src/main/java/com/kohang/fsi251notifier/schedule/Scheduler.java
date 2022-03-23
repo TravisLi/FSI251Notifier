@@ -1,9 +1,7 @@
 package com.kohang.fsi251notifier.schedule;
 
-import com.kohang.fsi251notifier.azure.AzureFileAccesser;
+import com.kohang.fsi251notifier.azure.CloudFileCopier;
 import com.kohang.fsi251notifier.azure.FSI251Recognizer;
-import com.kohang.fsi251notifier.azure.OneDriveFileAccesser;
-import com.kohang.fsi251notifier.controller.FilesImportController;
 import com.kohang.fsi251notifier.email.EmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
-import java.io.File;
 import java.time.LocalDate;
-import java.util.List;
 
 @Component
 @EnableScheduling
@@ -23,17 +19,15 @@ public class Scheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(Scheduler.class);
 
-    private final AzureFileAccesser azureFileAccesser;
+    private final CloudFileCopier cloudFileCopier;
     private final EmailSender emailSender;
     private final FSI251Recognizer fsi251Recognizer;
-    private final OneDriveFileAccesser oneDriveFileAccesser;
 
     @Autowired
-    public Scheduler(AzureFileAccesser a, EmailSender e, FSI251Recognizer f, OneDriveFileAccesser o){
-        this.azureFileAccesser = a;
+    public Scheduler(CloudFileCopier c, EmailSender e, FSI251Recognizer f){
+        this.cloudFileCopier = c;
         this.emailSender = e;
         this.fsi251Recognizer = f;
-        this.oneDriveFileAccesser = o;
     }
 
     //prod: 0 0 0 * * * execute at 00:00:00 everyday
@@ -41,8 +35,7 @@ public class Scheduler {
     public void importFilesDaily(){
         logger.info("Scheduled file import daily start");
         LocalDate createDate = LocalDate.now();
-        List<File> fileList = oneDriveFileAccesser.getFilesByDriveItems(oneDriveFileAccesser.getAllDriveItemsInRootFolderWithCreateDate(createDate));
-        azureFileAccesser.uploadToSrcFolder(fileList);
+        cloudFileCopier.copyAllOneDriveCertsToAzureSrcDriveWithCreateDate(createDate);
     }
 
     //prod: 0 0 1 * * *execute at 00:00 1st of every month

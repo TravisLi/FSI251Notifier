@@ -3,6 +3,7 @@ package com.kohang.fsi251notifier.azure;
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
+import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
@@ -11,18 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.LinkedList;
 import java.util.List;
 
 @Component
@@ -59,7 +52,32 @@ public class OneDriveFileAccesser {
                 .buildClient();
     }
 
-    public List<DriveItem> getAllDriveItemsInRootFolder() {
+    public DriveItemCollectionPage getDriveItemCollectionPageFromRootFolder(){
+        return graphClient.shares(ENCODED_ONE_DRIVE_SHARE_URL).driveItem().children().buildRequest().get();
+    }
+
+    public DriveItemCollectionPage getDriverItemCollectionPage(DriveItem item){
+        return graphClient.shares(encodeURLinBase64Format(item.webUrl)).driveItem().children().buildRequest().get();
+    }
+
+    public InputStream getInputStreamFromDriveItem(DriveItem driveItem) {
+
+        if (driveItem != null && driveItem.webUrl != null) {
+
+            logger.info("Getting input stream from following url: " + driveItem.webUrl);
+
+            try{
+                return graphClient.shares(encodeURLinBase64Format(driveItem.webUrl)).driveItem().content().buildRequest().get();
+            }catch(ClientException e){
+                logger.error("Getting error while getting input stream");
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    /*public List<DriveItem> getAllDriveItemsInRootFolder() {
         logger.info("Getting drive items from root folder");
 
         List<DriveItem> resultList = new LinkedList<>();
@@ -85,9 +103,9 @@ public class OneDriveFileAccesser {
         }
 
         return resultList;
-    }
+    }*/
 
-    private List<DriveItem> processDriveItemCollectionPageWithCreateDate(DriveItemCollectionPage page, LocalDate createDate) {
+    /*private List<DriveItem> processDriveItemCollectionPageWithCreateDate(DriveItemCollectionPage page, LocalDate createDate) {
 
         List<DriveItem> result = new LinkedList<>();
 
@@ -134,9 +152,9 @@ public class OneDriveFileAccesser {
         }
 
         return result;
-    }
+    }*/
 
-    private List<DriveItem> processDriveItemCollectionPage(DriveItemCollectionPage page) {
+    /*private List<DriveItem> processDriveItemCollectionPage(DriveItemCollectionPage page) {
 
         List<DriveItem> result = new LinkedList<>();
 
@@ -173,9 +191,9 @@ public class OneDriveFileAccesser {
         }
 
         return result;
-    }
+    }*/
 
-    public List<File> getFilesByDriveItems(List<DriveItem> driveItemList) {
+    /*public List<File> getFilesByDriveItems(List<DriveItem> driveItemList) {
 
         List<File> fileList = new LinkedList<>();
 
@@ -190,9 +208,9 @@ public class OneDriveFileAccesser {
         });
 
         return fileList;
-    }
+    }*/
 
-    private File getFileByDriveItem(DriveItem driveItem) {
+    /*public  File getFileByDriveItem(DriveItem driveItem) {
 
         if (driveItem.name != null && driveItem.webUrl != null) {
 
@@ -228,7 +246,7 @@ public class OneDriveFileAccesser {
         }
 
         return null;
-    }
+    }*/
 
     private static String encodeURLinBase64Format(String url) {
         String base64Value = Base64.getEncoder().withoutPadding().encodeToString(url.getBytes(StandardCharsets.UTF_8));

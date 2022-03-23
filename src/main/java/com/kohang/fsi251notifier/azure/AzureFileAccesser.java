@@ -152,7 +152,8 @@ public class AzureFileAccesser {
 			InputStream uploadData;
 			try {
 				uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
-				ShareFileUploadInfo response = sc.uploadRange(uploadData, file.length());
+				ShareFileUploadInfo response = sc.upload(uploadData, file.length(), null);
+				//ShareFileUploadInfo response = sc.uploadRange(uploadData, file.length());
 				return response.getETag();
 				
 			} catch (IOException e) {
@@ -165,7 +166,50 @@ public class AzureFileAccesser {
 		
 	}
 
-	public List<String> uploadToSrcFolder(List<File> fileList){
+	public String uploadToSrcFolder(String fileName, long maxSize, InputStream is) {
+
+		if(is!=null&&!fileName.isEmpty()&&maxSize>0) {
+
+			ShareFileClient sc = sourceDirClient.createFile(fileName, maxSize);
+
+			try {
+				ShareFileUploadInfo response = sc.upload(is,maxSize,null);
+				return response.getETag();
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally {
+				try {
+					is.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+		return "";
+
+	}
+
+	public String uploadToProcessFolder(File file) {
+
+		ShareFileClient pc = processDirClient.createFile(file.getName(), file.length());
+
+		try {
+			InputStream uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+			ShareFileUploadInfo response = pc.uploadRange(uploadData, file.length());
+			return response.getETag();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return "";
+
+	}
+
+	/*public List<String> uploadToSrcFolder(List<File> fileList){
 
 		List<String> fileNameList = new LinkedList<>();
 		fileList.forEach(f->{
@@ -179,25 +223,6 @@ public class AzureFileAccesser {
 		});
 
 		return fileNameList;
-	}
-	
-	public String uploadToProcessFolder(File file) {
-		
-		ShareFileClient pc = processDirClient.createFile(file.getName(), file.length());
+	}*/
 
-		try {
-			InputStream uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
-			ShareFileUploadInfo response = pc.uploadRange(uploadData, file.length());
-			return response.getETag();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return "";
-		
-	}
-
-
-	
 }

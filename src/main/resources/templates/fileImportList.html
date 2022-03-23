@@ -8,14 +8,7 @@
 	<div>
     	Welcome <span th:text="${user.getUsername()}"></span>
     </div>
-	<table>
-        <tr>
-            <td>File Name</td>
-        </tr>
-        <tr th:each="f: ${fileList}">
-            <td th:text="${f}"></td>
-        </tr>
-    </table>
+    <h1>Import job has been submitted, please go to fsi 251 page to check later</h1>
     <form th:action="@{/logout}" method="post">
         <div>
             <input type="submit" value="Logout"/>
