@@ -1,22 +1,5 @@
 package com.kohang.fsi251notifier.azure;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import com.azure.storage.blob.models.ParallelTransferOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import com.azure.core.util.polling.PollResponse;
 import com.azure.core.util.polling.SyncPoller;
 import com.azure.storage.file.share.ShareClient;
@@ -26,6 +9,16 @@ import com.azure.storage.file.share.ShareServiceClientBuilder;
 import com.azure.storage.file.share.models.CopyStatusType;
 import com.azure.storage.file.share.models.ShareFileCopyInfo;
 import com.azure.storage.file.share.models.ShareFileUploadInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class AzureFileAccesser {
@@ -102,24 +95,25 @@ public class AzureFileAccesser {
 	
 	public void copyAndDeleteFiles(List<String> nameList) {
 		
-		nameList.forEach(name->{
-			
-			ShareFileClient sc = sourceDirClient.getFileClient(name);
-			ShareFileClient pc = processDirClient.createFile(name, MAX_SIZE);
-			
-			SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), null, Duration.ofSeconds(10));
-
-			final PollResponse<ShareFileCopyInfo> pollResponse = poller.poll();
-			final ShareFileCopyInfo value = pollResponse.getValue();
-			
-			if(value.getCopyStatus().equals(CopyStatusType.SUCCESS)) {
-				logger.info(sc.getFileUrl() + " copy completed. Delete will be executed");
-				sc.delete();
-			}
-						
-			
-		});
+		nameList.forEach(this::copyAndDeleteFile);
 		
+	}
+
+	public void copyAndDeleteFile(String filename) {
+
+		ShareFileClient sc = sourceDirClient.getFileClient(filename);
+		ShareFileClient pc = processDirClient.createFile(filename, MAX_SIZE);
+
+		SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), null, Duration.ofSeconds(10));
+
+		final PollResponse<ShareFileCopyInfo> pollResponse = poller.poll();
+		final ShareFileCopyInfo value = pollResponse.getValue();
+
+		if (value.getCopyStatus().equals(CopyStatusType.SUCCESS)) {
+			logger.info(sc.getFileUrl() + " copy completed. Delete will be executed");
+			sc.delete();
+		}
+
 	}
 		
 	public ByteArrayOutputStream getSrcFileByteArrayOutputStream(String name) {
@@ -177,13 +171,8 @@ public class AzureFileAccesser {
 				return response.getETag();
 
 			} catch (Exception e) {
+				logger.error("upload file error");
 				e.printStackTrace();
-			}finally {
-				try {
-					is.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 			}
 
 		}
@@ -202,6 +191,7 @@ public class AzureFileAccesser {
 			return response.getETag();
 
 		} catch (IOException e) {
+			logger.error("Upload to Processed folder error");
 			e.printStackTrace();
 		}
 

@@ -85,6 +85,7 @@ public class CloudFileCopier {
                     }
 
                     if(doUpload){
+                        logger.info("Uploading file to azure");
                         this.uploadDriveItem(driveItem);
                     }
 
@@ -104,12 +105,6 @@ public class CloudFileCopier {
         InputStream is = oneDriveFileAccesser.getInputStreamFromDriveItem(item);
         if(is!=null){
             azureFileAccesser.uploadToSrcFolder(item.name, item.size, is);
-            try {
-                is.close();
-            } catch (IOException e) {
-                logger.error("Input Stream close fail");
-                e.printStackTrace();
-            }
         }
     }
 

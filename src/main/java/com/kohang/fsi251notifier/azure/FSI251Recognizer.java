@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kohang.fsi251notifier.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class FSI251Recognizer {
 	}
 
 	//save cert file to DB, run once a day
+	//TODO: create an exception list for those cert cannot be inserted to DB, in addition with UI to rescue the file
 	@Transactional
 	public List<FSI251Data> run(){
 		logger.info("run start");
@@ -63,21 +65,30 @@ public class FSI251Recognizer {
 			//if the document does not contain cert no and cert date, will skip the check
 			if(data.getCertNo()!=null&&data.getCertDate()!=null) {
 
-				FSI251Data dataInDb = repository.findByCertNo(data.getCertNo());
+				try {
+					Util.convertDateStrToLocalDate(data.getCertDate());
 
-				if (dataInDb == null) {
-					logger.info("Save the record to DB");
-					repository.save(data);
-				} else {
-					logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
+					FSI251Data dataInDb = repository.findByCertNo(data.getCertNo());
+
+					if (dataInDb == null) {
+						logger.info("Save the record to DB");
+						repository.save(data);
+						resultList.add(data);
+					} else {
+						logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
+					}
+
+				} catch (Exception e) {
+					logger.error(data.getCertDate() + " cannot format into dd/mm/yyyy format");
+					e.printStackTrace();
 				}
 
-				resultList.add(data);
 			}
 
-		}
+			//do it one by one rather than in whole list
+			accesser.copyAndDeleteFile(fileName);
 
-		accesser.copyAndDeleteFiles(srcFiles);
+		}
 
 		return resultList;
 	}

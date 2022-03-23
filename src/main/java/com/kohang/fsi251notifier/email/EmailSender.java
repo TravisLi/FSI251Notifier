@@ -1,5 +1,20 @@
 package com.kohang.fsi251notifier.email;
 
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
+import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.FSI251Repository;
+import com.kohang.fsi251notifier.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,36 +23,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
-import com.kohang.fsi251notifier.azure.AzureFileAccesser;
-import com.kohang.fsi251notifier.model.FSI251Data;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
-import com.kohang.fsi251notifier.util.Util;
-
 @Component
 public class EmailSender {
 
 	private static final Logger logger = LoggerFactory.getLogger(EmailSender.class); 
 	private static final String EMAIL_SERVER = "smtp.gmail.com";
 	private static final String OFFICE_EMAIL = "office@kohang.com.hk";
-	private static final String HTML_TEMLPLATE = "<html>%s</html>";
+	private static final String HTML_TEMPLATE = "<html>%s</html>";
 	private static final String MESSAGE = "以下證書快將到期，請聯絡客戶做年檢</br>";
 	private static final String EMAIL_SUBJECT = "證書到期提示";
 	private static final String TESTING_KEY_WORD = "<測試>";
@@ -106,7 +98,8 @@ public class EmailSender {
 			builder.append(buildHTMLTable(list));
 
 			MimeBodyPart mimeBodyPart = new MimeBodyPart();
-			mimeBodyPart.setContent(String.format(HTML_TEMLPLATE, builder.toString()), "text/html; charset=utf-8");
+			mimeBodyPart.setContent(String.format(HTML_TEMPLATE, builder), "text/html; charset=utf-8");
+			mimeBodyPart.setContent(String.format(HTML_TEMPLATE, builder), "text/html; charset=utf-8");
 
 			Multipart multipart = new MimeMultipart();
 			multipart.addBodyPart(mimeBodyPart);
@@ -148,7 +141,7 @@ public class EmailSender {
 
 			message.setContent(multipart);
 
-			//only send email if ther are content
+			//only send email if there are content
 			if(sendEmail){
 				logger.info("Sending Email...");
 				Transport.send(message, username, password);
