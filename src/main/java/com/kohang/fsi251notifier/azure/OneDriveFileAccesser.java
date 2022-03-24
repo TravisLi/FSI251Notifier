@@ -53,6 +53,7 @@ public class OneDriveFileAccesser {
     }
 
     public DriveItemCollectionPage getDriveItemCollectionPageFromRootFolder(){
+        logger.info(ENCODED_ONE_DRIVE_SHARE_URL);
         return graphClient.shares(ENCODED_ONE_DRIVE_SHARE_URL).driveItem().children().buildRequest().get();
     }
 

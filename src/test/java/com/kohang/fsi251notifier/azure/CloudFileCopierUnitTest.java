@@ -1,6 +1,7 @@
 package com.kohang.fsi251notifier.azure;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +21,20 @@ public class CloudFileCopierUnitTest {
     @Autowired
     private AzureFileAccesser fileAccesser;
 
-    @BeforeAll
+    @BeforeEach
     public void clearFiles(){
         fileAccesser.deleteAllFilesInSrcFolder();
     }
 
     @Test
+    //TODO the result need to be dynamic
     public void testCopyAllOneDriveCertsToAzureSrcDrive(){
 
         copier.copyAllOneDriveCertsToAzureSrcDrive();
 
-        assertEquals(5, fileAccesser.getSrcFiles().size());
+        LocalDate now = LocalDate.now();
+
+        assertEquals(4, fileAccesser.getSrcFiles().size());
 
     }
 

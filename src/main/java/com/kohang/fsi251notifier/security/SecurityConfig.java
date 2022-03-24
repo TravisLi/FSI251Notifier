@@ -15,8 +15,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private String username;
-	private String password;
+	private final String username;
+	private final String password;
 	
 	public SecurityConfig(@Value("${web_user}")String username, @Value("${web_password}")String password) {
 		super();
@@ -29,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
+                .formLogin().defaultSuccessUrl("/manual")
                 .loginPage("/login").permitAll()
                 .and()
                 .logout().permitAll();

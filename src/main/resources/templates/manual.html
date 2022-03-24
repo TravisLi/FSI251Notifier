@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>FSI251 Manual</title>
+</head>
+<body>
+	<div>
+    	Welcome <span th:text="${user.getUsername()}"></span>
+    </div>
+    <div>
+        <p><span th:text="${msg}"></span></p>
+    </div>
+    <form th:action="@{/start/import}" method="get">
+        <div>
+            <input type="submit" value="import"/>
+        </div>
+    </form>
+    <form th:action="@{/start/recognize}" method="get">
+        <div>
+            <input type="submit" value="Recognize"/>
+        </div>
+    </form>
+    <form th:action="@{/start/email}" method="get">
+        <div>
+            <input type="submit" value="Email"/>
+        </div>
+    </form>
+    <form th:action="@{/logout}" method="post">
+        <div>
+            <input type="submit" value="Logout"/>
+        </div>
+    </form>
+</body>
+</html>

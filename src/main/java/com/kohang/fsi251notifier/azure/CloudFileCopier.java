@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -23,35 +22,35 @@ public class CloudFileCopier {
     private final OneDriveFileAccesser oneDriveFileAccesser;
 
     @Autowired
-    public CloudFileCopier(AzureFileAccesser a, OneDriveFileAccesser o){
+    public CloudFileCopier(AzureFileAccesser a, OneDriveFileAccesser o) {
 
         this.azureFileAccesser = a;
         this.oneDriveFileAccesser = o;
 
     }
 
-    public void copyAllOneDriveCertsToAzureSrcDrive(){
+    public void copyAllOneDriveCertsToAzureSrcDrive() {
         logger.info("Copying all One Drive cert file to Azure src drive");
         DriveItemCollectionPage page = oneDriveFileAccesser.getDriveItemCollectionPageFromRootFolder();
-        if(page!=null){
+        if (page != null) {
             processDriveItemCollectionPage(page, null);
-        }else{
+        } else {
             logger.warn("No root folder found!!!");
         }
     }
 
-    public void copyAllOneDriveCertsToAzureSrcDriveWithCreateDate(LocalDate createDate){
+    public void copyAllOneDriveCertsToAzureSrcDriveWithCreateDate(LocalDate createDate) {
         logger.info("Copying all One Drive cert file to azure src drive with create date:" + createDate);
 
         DriveItemCollectionPage page = oneDriveFileAccesser.getDriveItemCollectionPageFromRootFolder();
-        if(page!=null){
+        if (page != null) {
             processDriveItemCollectionPage(page, createDate);
-        }else{
+        } else {
             logger.warn("No root folder found!!!");
         }
     }
 
-    public void processDriveItemCollectionPage(DriveItemCollectionPage page, LocalDate createDate){
+    public void processDriveItemCollectionPage(final DriveItemCollectionPage page, LocalDate createDate) {
 
         page.getCurrentPage().forEach(driveItem -> {
             //it is a folder
@@ -70,21 +69,51 @@ public class CloudFileCopier {
                 if (driveItem.name != null && driveItem.name.contains(PDF_EXTENSION)) {
                     logger.info("processing file with name: " + driveItem.name);
 
-                    boolean doUpload = true;
+                    boolean doUpload = false;
 
-                    if(createDate!=null){
+                    OffsetDateTime fromOffsetDateTime;
+                    OffsetDateTime toOffsetDateTime;
+
+                    //set the date range only insert certs start from last year with last month
+                    //use last modified date if the create date is null
+                    if(createDate==null){
+                        LocalDate today = LocalDate.now();
+                        fromOffsetDateTime = today.atStartOfDay(ZoneOffset.UTC).minusYears(1).minusMonths(1).withDayOfMonth(1).toOffsetDateTime();
+                        toOffsetDateTime = today.atStartOfDay(ZoneOffset.UTC).plusDays(1).toOffsetDateTime();
+
+                        logger.debug("file filter start date:" + fromOffsetDateTime);
+                        logger.debug("file filter end date:" + toOffsetDateTime);
+
+                        if (driveItem.lastModifiedDateTime != null) {
+
+                            logger.debug("lastModifiedDateTime:" + toOffsetDateTime);
+
+                            if ((driveItem.lastModifiedDateTime.isAfter(fromOffsetDateTime) || driveItem.lastModifiedDateTime.isEqual(fromOffsetDateTime)) && driveItem.lastModifiedDateTime.isBefore(toOffsetDateTime)) {
+                                doUpload = true;
+                            }
+                        }
+                    //set the range date range only insert certs start from today with the same month
+                    //use createDateTime if for daily import
+                    }else{
+                        fromOffsetDateTime = createDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
+                        toOffsetDateTime = createDate.atStartOfDay(ZoneOffset.UTC).plusDays(1).toOffsetDateTime();
+
+                        logger.debug("file filter start date:" + fromOffsetDateTime);
+                        logger.debug("file filter end date:" + toOffsetDateTime);
+
                         if (driveItem.createdDateTime != null) {
 
-                            OffsetDateTime fromOffsetDateTime = createDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
-                            OffsetDateTime toOffsetDateTime = createDate.atStartOfDay(ZoneOffset.UTC).minusDays(-1).toOffsetDateTime();
+                            logger.debug("createdDateTime:" + toOffsetDateTime);
 
-                            if (!((driveItem.createdDateTime.isAfter(fromOffsetDateTime) || driveItem.createdDateTime.isEqual(fromOffsetDateTime)) && driveItem.createdDateTime.isBefore(toOffsetDateTime))) {
-                                doUpload = false;
+                            if ((driveItem.createdDateTime.isAfter(fromOffsetDateTime) || driveItem.createdDateTime.isEqual(fromOffsetDateTime)) && driveItem.createdDateTime.isBefore(toOffsetDateTime)) {
+                                doUpload = true;
                             }
                         }
                     }
 
-                    if(doUpload){
+
+
+                    if (doUpload) {
                         logger.info("Uploading file to azure");
                         this.uploadDriveItem(driveItem);
                     }
@@ -101,9 +130,9 @@ public class CloudFileCopier {
         }
     }
 
-    private void uploadDriveItem(DriveItem item){
+    private void uploadDriveItem(DriveItem item) {
         InputStream is = oneDriveFileAccesser.getInputStreamFromDriveItem(item);
-        if(is!=null){
+        if (is != null) {
             azureFileAccesser.uploadToSrcFolder(item.name, item.size, is);
         }
     }

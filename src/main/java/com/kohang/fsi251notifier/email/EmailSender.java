@@ -150,7 +150,6 @@ public class EmailSender {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 			logger.error("Email Message Prepare Exception");
-			throw e;
 		} finally {
 			
 			for(File file: fileList) {

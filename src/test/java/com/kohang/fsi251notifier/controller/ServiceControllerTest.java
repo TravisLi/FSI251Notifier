@@ -1,9 +1,6 @@
 package com.kohang.fsi251notifier.controller;
 
-import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.azure.CloudFileCopier;
-import com.kohang.fsi251notifier.azure.OneDriveFileAccesser;
-import com.kohang.fsi251notifier.util.TestUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,31 +19,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class FileImportControllerTest {
+public class ServiceControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
-
-	@SpyBean
-	private CloudFileCopier copier;
 
 	@Test
 	@WithMockUser("admin")
 	public void testImport() throws Exception {
 		
-		this.mockMvc.perform(get("/import")).andDo(print())
+		this.mockMvc.perform(get("/start/import")).andDo(print())
 		.andExpect(status().isOk())
-		.andExpect(content().string(containsString("Import job has been submitted, please go to fsi 251 page to check later")));
+		.andExpect(content().string(containsString("File import started")));
 
-		verify(copier, times(1)).copyAllOneDriveCertsToAzureSrcDrive();
+	}
+
+	@Test
+	@WithMockUser("admin")
+	public void testEmailSend() throws Exception {
+
+		this.mockMvc.perform(get("/start/email")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString("Email send started")));
+
+	}
+
+	@Test
+	@WithMockUser("admin")
+	public void testRecognize() throws Exception {
+
+		this.mockMvc.perform(get("/start/recognition")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString("Recognition started")));
 
 	}
 	
 	@Test
 	public void testAuthFail() throws Exception {
-		
-		this.mockMvc.perform(get("/import")).andDo(print())
-		.andExpectAll(status().is3xxRedirection(),redirectedUrlPattern("http://*/login"));
+
+		this.mockMvc.perform(get("/start/import")).andDo(print())
+				.andExpectAll(status().is3xxRedirection(),redirectedUrlPattern("http://*/login"));
+
+		this.mockMvc.perform(get("/start/email")).andDo(print())
+				.andExpectAll(status().is3xxRedirection(),redirectedUrlPattern("http://*/login"));
+
+		this.mockMvc.perform(get("/start/recognition")).andDo(print())
+				.andExpectAll(status().is3xxRedirection(),redirectedUrlPattern("http://*/login"));
 		
 	}
 	
