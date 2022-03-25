@@ -48,7 +48,7 @@ public class ServiceControllerTest {
 	@WithMockUser("admin")
 	public void testRecognize() throws Exception {
 
-		this.mockMvc.perform(get("/start/recognition")).andDo(print())
+		this.mockMvc.perform(get("/start/recognize")).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(content().string(containsString("Recognition started")));
 
@@ -63,7 +63,7 @@ public class ServiceControllerTest {
 		this.mockMvc.perform(get("/start/email")).andDo(print())
 				.andExpectAll(status().is3xxRedirection(),redirectedUrlPattern("http://*/login"));
 
-		this.mockMvc.perform(get("/start/recognition")).andDo(print())
+		this.mockMvc.perform(get("/start/recognize")).andDo(print())
 				.andExpectAll(status().is3xxRedirection(),redirectedUrlPattern("http://*/login"));
 		
 	}

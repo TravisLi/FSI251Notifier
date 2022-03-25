@@ -141,7 +141,7 @@ public class AzureFileAccesser {
 
 	public String uploadToSrcFolder(String fileName, long maxSize, InputStream is) {
 
-		return uploadToFolder(this.processedDirClient,fileName,maxSize,is);
+		return uploadToFolder(this.sourceDirClient,fileName,maxSize,is);
 
 	}
 

@@ -86,7 +86,7 @@ public class CloudFileCopier {
 
                         if (driveItem.lastModifiedDateTime != null) {
 
-                            logger.debug("lastModifiedDateTime:" + toOffsetDateTime);
+                            logger.debug("lastModifiedDateTime:" + driveItem.lastModifiedDateTime);
 
                             if ((driveItem.lastModifiedDateTime.isAfter(fromOffsetDateTime) || driveItem.lastModifiedDateTime.isEqual(fromOffsetDateTime)) && driveItem.lastModifiedDateTime.isBefore(toOffsetDateTime)) {
                                 doUpload = true;
@@ -110,8 +110,6 @@ public class CloudFileCopier {
                             }
                         }
                     }
-
-
 
                     if (doUpload) {
                         logger.info("Uploading file to azure");

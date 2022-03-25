@@ -99,7 +99,6 @@ public class EmailSender {
 
 			MimeBodyPart mimeBodyPart = new MimeBodyPart();
 			mimeBodyPart.setContent(String.format(HTML_TEMPLATE, builder), "text/html; charset=utf-8");
-			mimeBodyPart.setContent(String.format(HTML_TEMPLATE, builder), "text/html; charset=utf-8");
 
 			Multipart multipart = new MimeMultipart();
 			multipart.addBodyPart(mimeBodyPart);
@@ -128,7 +127,7 @@ public class EmailSender {
 						attachmentBodyPart.attachFile(file);
 						
 						multipart.addBodyPart(attachmentBodyPart);
-						
+
 						fileList.add(file);
 					}
 					

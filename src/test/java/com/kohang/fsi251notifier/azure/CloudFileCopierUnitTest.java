@@ -32,8 +32,6 @@ public class CloudFileCopierUnitTest {
 
         copier.copyAllOneDriveCertsToAzureSrcDrive();
 
-        LocalDate now = LocalDate.now();
-
         assertEquals(4, fileAccesser.getSrcFiles().size());
 
     }
