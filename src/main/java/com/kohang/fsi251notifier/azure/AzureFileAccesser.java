@@ -9,6 +9,7 @@ import com.azure.storage.file.share.ShareServiceClientBuilder;
 import com.azure.storage.file.share.models.CopyStatusType;
 import com.azure.storage.file.share.models.ShareFileCopyInfo;
 import com.azure.storage.file.share.models.ShareFileUploadInfo;
+import com.kohang.fsi251notifier.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,7 @@ public class AzureFileAccesser {
 	private static final long MAX_SIZE = 10240;
 	
 	private final ShareDirectoryClient sourceDirClient;
-	private final ShareDirectoryClient processDirClient;
+	private final ShareDirectoryClient processedDirClient;
 	
 	public AzureFileAccesser(@Value("${azure_storage}")String storageConnectionStr) {
 		
@@ -44,12 +45,12 @@ public class AzureFileAccesser {
 			this.sourceDirClient.create();
 		}
 		
-		this.processDirClient = shareClient.getDirectoryClient(PROCESSED_DIR);
+		this.processedDirClient = shareClient.getDirectoryClient(PROCESSED_DIR);
 		
 		//create the folder if the folder does not exist
-		if(!this.processDirClient.exists()) {
+		if(!this.processedDirClient.exists()) {
 			logger.info("Processed directory is missing, create a new one");
-			this.processDirClient.create();
+			this.processedDirClient.create();
 		}
 		
 	}
@@ -62,7 +63,7 @@ public class AzureFileAccesser {
 				
 		sourceDirClient.listFilesAndDirectories().forEach(item->{
 			
-			if(item.getName().contains(".pdf")) {
+			if(item.getName().contains(Util.PDF_EXTENSION)) {
 				
 				ShareFileClient c = sourceDirClient.getFileClient(item.getName());
 				logger.info(c.getFileUrl());
@@ -78,7 +79,7 @@ public class AzureFileAccesser {
 	
 	public String getProcessedFileUrl(String fileName){
 		
-		ShareFileClient pc = processDirClient.getFileClient(fileName);
+		ShareFileClient pc = processedDirClient.getFileClient(fileName);
 		return pc.getFileUrl();
 		
 	}
@@ -102,7 +103,7 @@ public class AzureFileAccesser {
 	public void copyAndDeleteFile(String filename) {
 
 		ShareFileClient sc = sourceDirClient.getFileClient(filename);
-		ShareFileClient pc = processDirClient.createFile(filename, MAX_SIZE);
+		ShareFileClient pc = processedDirClient.createFile(filename, MAX_SIZE);
 
 		SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), null, Duration.ofSeconds(10));
 
@@ -117,79 +118,69 @@ public class AzureFileAccesser {
 	}
 		
 	public ByteArrayOutputStream getSrcFileByteArrayOutputStream(String name) {
-		
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		
-		sourceDirClient.getFileClient(name).download(stream);
-		
-		return stream;
+
+		return getFileByteArrayOutputStream(sourceDirClient, name);
 		
 	}
 	
 	public ByteArrayOutputStream getProcessedFileByteArrayOutputStream(String name) {
-		
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		
-		processDirClient.getFileClient(name).download(stream);
-		
-		return stream;
+
+		return getFileByteArrayOutputStream(processedDirClient, name);
 		
 	}
-	
-	
-	public String uploadToSrcFolder(File file) {
-		
-		if(file!=null&&file.length()>0) {
-			
-			ShareFileClient sc = sourceDirClient.createFile(file.getName(), file.length());
-			
-			InputStream uploadData;
-			try {
-				uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
-				ShareFileUploadInfo response = sc.upload(uploadData, file.length(), null);
-				//ShareFileUploadInfo response = sc.uploadRange(uploadData, file.length());
-				return response.getETag();
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		}
-		
-		return "";
-		
+
+	private ByteArrayOutputStream getFileByteArrayOutputStream(ShareDirectoryClient client, String name) {
+
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+		client.getFileClient(name).download(stream);
+
+		return stream;
+
 	}
 
 	public String uploadToSrcFolder(String fileName, long maxSize, InputStream is) {
 
+		return uploadToFolder(this.processedDirClient,fileName,maxSize,is);
+
+	}
+
+	public String uploadToProcessedFolder(String fileName, long maxSize, InputStream is) {
+
+		return uploadToFolder(this.processedDirClient,fileName,maxSize,is);
+
+	}
+
+	private String uploadToFolder(ShareDirectoryClient client, String fileName, long maxSize, InputStream is) {
+
 		if(is!=null&&!fileName.isEmpty()&&maxSize>0) {
 
-			ShareFileClient sc = sourceDirClient.createFile(fileName, maxSize);
-
-			try {
-				ShareFileUploadInfo response = sc.upload(is,maxSize,null);
-				return response.getETag();
-
-			} catch (Exception e) {
-				logger.error("upload file error");
-				e.printStackTrace();
-			}
-
+			ShareFileClient sc = client.createFile(fileName, maxSize);
+			ShareFileUploadInfo response = sc.upload(is,maxSize,null);
+			return response.getETag();
 		}
 
 		return "";
 
 	}
 
-	public String uploadToProcessFolder(File file) {
-
-		ShareFileClient pc = processDirClient.createFile(file.getName(), file.length());
+	public String uploadToSrcFolder(File file) {
 
 		try {
-			InputStream uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
-			ShareFileUploadInfo response = pc.uploadRange(uploadData, file.length());
-			return response.getETag();
+			return uploadToFolder(this.sourceDirClient,file);
+		} catch (IOException e) {
+			logger.error("Upload to Source folder error");
+			e.printStackTrace();
+		}
 
+		return "";
+
+	}
+
+	public String uploadToProcessedFolder(File file) {
+
+		try {
+			return uploadToFolder(this.processedDirClient,file);
 		} catch (IOException e) {
 			logger.error("Upload to Processed folder error");
 			e.printStackTrace();
@@ -197,6 +188,18 @@ public class AzureFileAccesser {
 
 		return "";
 
+	}
+
+	private String uploadToFolder(ShareDirectoryClient client, File file) throws IOException {
+
+		if(file!=null&&file.length()>0) {
+			ShareFileClient pc = client.createFile(file.getName(), file.length());
+			InputStream uploadData = new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+			ShareFileUploadInfo response = pc.upload(uploadData, file.length(),null);
+			return response.getETag();
+		}
+
+		return "";
 	}
 
 	/*public List<String> uploadToSrcFolder(List<File> fileList){

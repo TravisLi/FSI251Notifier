@@ -62,7 +62,7 @@ public class ServiceController {
 		return "manual";
 	}
 
-	@GetMapping("/recognition")
+	@GetMapping("/recognize")
 	public String recognize(@AuthenticationPrincipal User user, Model model){
 		logger.info("Recognition start");
 

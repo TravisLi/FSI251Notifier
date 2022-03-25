@@ -1,5 +1,6 @@
 package com.kohang.fsi251notifier.azure;
 
+import com.kohang.fsi251notifier.util.Util;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ public class CloudFileCopier {
 
     private static final Logger logger = LoggerFactory.getLogger(CloudFileCopier.class);
 
-    private static final String PDF_EXTENSION = ".pdf";
     private final AzureFileAccesser azureFileAccesser;
     private final OneDriveFileAccesser oneDriveFileAccesser;
 
@@ -66,7 +66,7 @@ public class CloudFileCopier {
                 //it is a file
             } else {
 
-                if (driveItem.name != null && driveItem.name.contains(PDF_EXTENSION)) {
+                if (driveItem.name != null && driveItem.name.contains(Util.PDF_EXTENSION)) {
                     logger.info("processing file with name: " + driveItem.name);
 
                     boolean doUpload = false;

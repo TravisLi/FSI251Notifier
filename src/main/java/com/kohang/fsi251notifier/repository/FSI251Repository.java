@@ -20,13 +20,13 @@ public interface FSI251Repository extends MongoRepository<FSI251Data, String> {
 			$gte: [
 				{
 					$dateFromString: {
-						dateString: "$certDate", 
+						dateString: "$certDate",
 						format: "%d/%m/%Y"
 					}
 				},
 				{
 					$dateFromString: {
-						dateString: "?0", 
+						dateString: "?0",
 						format: "%d/%m/%Y"}
 				}
 			]
@@ -35,18 +35,18 @@ public interface FSI251Repository extends MongoRepository<FSI251Data, String> {
 			$lte: [
 				{
 					$dateFromString: {
-					   dateString: "$certDate", 
+					   dateString: "$certDate",
 					   format: "%d/%m/%Y"}
 				},
 				{
 					$dateFromString: {
-					   dateString: "?1", 
+					   dateString: "?1",
 					   format: "%d/%m/%Y"}
 				}
 			]
 		}}
-	] 
-	} """)  
+	]
+	}""")
 	public List<FSI251Data> findByDateRange(String start, String end);
 	
 }

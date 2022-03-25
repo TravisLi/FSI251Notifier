@@ -40,9 +40,9 @@ public class EmailSenderIntegrationTest {
 			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 			File file1 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_1).getFile();	
 			File file2 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_2).getFile();	
-			fileAccesser.uploadToProcessFolder(file);
-			fileAccesser.uploadToProcessFolder(file1);
-			fileAccesser.uploadToProcessFolder(file2);
+			fileAccesser.uploadToProcessedFolder(file);
+			fileAccesser.uploadToProcessedFolder(file1);
+			fileAccesser.uploadToProcessedFolder(file2);
 
 		} catch (IOException e) {
 			e.printStackTrace();

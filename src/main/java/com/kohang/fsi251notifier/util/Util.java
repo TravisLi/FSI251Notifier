@@ -9,15 +9,17 @@ import org.slf4j.LoggerFactory;
 public class Util {
 
 	private static Logger logger = LoggerFactory.getLogger(Util.class); 
-	private static final String DATE_DELIMTER = "/";
+	private static final String DATE_DELIMITER = "/";
+	public static final String PDF_EXTENSION = ".pdf";
 	
 	public static LocalDate convertDateStrToLocalDate(String dateStr) throws NumberFormatException, Exception {
 		
-		String[] dateArray = dateStr.split(DATE_DELIMTER);
+		String[] dateArray = dateStr.split(DATE_DELIMITER);
 
 		LocalDate certDate = null;
-		
-		if(dateArray.length==3) {
+
+		//make sure the length of year is equal to 4, there is case has year recognized as 20212
+		if(dateArray.length==3 && dateArray[2].length()==4) {
 
 			logger.debug(String.format("Day:%s, Month:%s, Year:%s",dateArray[0],dateArray[1],dateArray[2]));
 
