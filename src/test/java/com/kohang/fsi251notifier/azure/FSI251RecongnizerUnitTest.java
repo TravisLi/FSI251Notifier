@@ -6,7 +6,6 @@ import com.kohang.fsi251notifier.repository.FSI251Repository;
 import com.kohang.fsi251notifier.util.TestUtil;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(classes = {FSI251RecongnizerUnitTest.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(OrderAnnotation.class)
-public class FSI251RecongnizerUnitTest {
+class FSI251RecongnizerUnitTest {
 
 	@Mock
 	private AzureFileAccesser accesser;
@@ -47,7 +46,7 @@ public class FSI251RecongnizerUnitTest {
 	private final List<String> fileList = List.of(TestUtil.SAMPLE_FILE, TestUtil.SAMPLE_FILE_1, TestUtil.SAMPLE_FILE_2, TestUtil.SAMPLE_FILE_EXCEPTION);
 	
 	@BeforeEach
-	public void init() {
+	void init() {
 		
 		try {
 
@@ -75,13 +74,12 @@ public class FSI251RecongnizerUnitTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Test
 	@DisplayName("Repository contain certs")
 	@Order(1)
-	public void testRunForRepositoryContainsTheCerts() {
+	void testRunForRepositoryContainsTheCerts() {
 		
 		when(accesser.getSrcFiles()).thenReturn(fileList);
 		when(fsi251Repo.findByCertNo(TestUtil.SAMPLE_CERT_NO)).thenReturn(TestUtil.getFSI251Data(0));
@@ -109,7 +107,7 @@ public class FSI251RecongnizerUnitTest {
 	@Test
 	@DisplayName("Repository does not contain certs")
 	@Order(2)
-	public void testRunForRepositoryDoesNotContainTheCerts() {
+	void testRunForRepositoryDoesNotContainTheCerts() {
 
 		when(accesser.getSrcFiles()).thenReturn(fileList);
 		when(fsi251Repo.findByCertNo(TestUtil.SAMPLE_CERT_NO)).thenReturn(null);
@@ -136,7 +134,5 @@ public class FSI251RecongnizerUnitTest {
 		assertEquals(1, dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_EXCEPTION)).toList().size());
 
 	}
-	
-	
 
 }

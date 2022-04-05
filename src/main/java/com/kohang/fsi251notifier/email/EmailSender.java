@@ -1,7 +1,6 @@
 package com.kohang.fsi251notifier.email;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -11,9 +10,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
+@Slf4j
 public class EmailSender {
 
-    private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
     private static final String EMAIL_SERVER = "smtp.gmail.com";
     private static final String OFFICE_EMAIL = "office@kohang.com.hk";
     private static final String TESTING_KEY_WORD = "<測試>";
@@ -49,13 +48,13 @@ public class EmailSender {
     }
 
     public void send(Message message) throws MessagingException {
-        logger.info("Sending Email...");
+        log.info("Sending Email...");
         Transport.send(message, username, password);
     }
 
     private String getEmailSubject(String counter) {
-        String emailSubject = String.format("%s-%s", this.emailSubject, counter);
-        return env != null && env.equals("prod") ? emailSubject : emailSubject + " " + TESTING_KEY_WORD;
+        String combinedEmailSubject = String.format("%s-%s", this.emailSubject, counter);
+        return env != null && env.equals("prod") ? combinedEmailSubject : combinedEmailSubject + " " + TESTING_KEY_WORD;
     }
 
 

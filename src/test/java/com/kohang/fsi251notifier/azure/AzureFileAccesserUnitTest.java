@@ -1,33 +1,27 @@
 package com.kohang.fsi251notifier.azure;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.azure.storage.file.share.models.ShareStorageException;
+import com.kohang.fsi251notifier.util.TestUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ResourceLoader;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ResourceLoader;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.azure.storage.file.share.models.ShareStorageException;
-import com.kohang.fsi251notifier.util.TestUtil;
-
+@Slf4j
 @SpringBootTest(classes = {AzureFileAccesser.class})
 @TestMethodOrder(OrderAnnotation.class)
-public class AzureFileAccesserUnitTest {
-
-	private static final Logger logger = LoggerFactory.getLogger(AzureFileAccesser.class);
+class AzureFileAccesserUnitTest {
 
 	@Autowired
 	private AzureFileAccesser fileAccesser;
@@ -37,21 +31,22 @@ public class AzureFileAccesserUnitTest {
 
 	@Test
 	@Order(1)
-	public void testUploadFile() {
+	void testUploadFile() {
 		
 		try {
 			
-			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();			
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 			assertFalse(fileAccesser.uploadToSrcFolder(file).isEmpty());
 			
 		} catch (IOException e) {
 			e.printStackTrace();
+			fail();
 		}
 	}
 	
 	@Test
 	@Order(2)
-	public void testGetSrcFiles() {
+	void testGetSrcFiles() {
 		
 		assertTrue(fileAccesser.getSrcFiles().contains(TestUtil.SAMPLE_FILE));
 		
@@ -59,7 +54,7 @@ public class AzureFileAccesserUnitTest {
 	
 	@Test
 	@Order(3)
-	public void testGetSrcFileByeArrayInputStream() {
+	void testGetSrcFileByeArrayInputStream() {
 				
 		assertTrue(fileAccesser.getSrcFileByteArrayOutputStream(TestUtil.SAMPLE_FILE).size()>0);
 		
@@ -67,7 +62,7 @@ public class AzureFileAccesserUnitTest {
 	
 	@Test
 	@Order(4)
-	public void testCopyAndDeleteFiles() {
+	void testCopyAndDeleteFiles() {
 		
 		List<String> nameList = new ArrayList<>();
 		nameList.add(TestUtil.SAMPLE_FILE);
@@ -82,7 +77,7 @@ public class AzureFileAccesserUnitTest {
 	
 	@Test
 	@Order(5)
-	public void testGetProcessedFileByeArrayInputStream() {
+	void testGetProcessedFileByeArrayInputStream() {
 				
 		assertTrue(fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.SAMPLE_FILE).size()>0);
 		
@@ -90,7 +85,7 @@ public class AzureFileAccesserUnitTest {
 	
 	@Test
 	@Order(6)
-	public void testGetFileNotFound() {
+	void testGetFileNotFound() {
 		
 		Exception exception = assertThrows(ShareStorageException.class, () -> fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.NO_FILE));
 		
@@ -103,7 +98,7 @@ public class AzureFileAccesserUnitTest {
 
 	@Test
 	@Order(7)
-	public void testAllFilesInSrcFolderAreDelete() {
+	void testAllFilesInSrcFolderAreDelete() {
 
 		try {
 			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
@@ -115,13 +110,14 @@ public class AzureFileAccesserUnitTest {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			fail();
 		}
 
 	}
 
 	@Test
 	@Order(8)
-	public void testAllFilesInProcessedFolderAreDelete() {
+	void testAllFilesInProcessedFolderAreDelete() {
 
 		try {
 			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
@@ -133,10 +129,9 @@ public class AzureFileAccesserUnitTest {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			fail();
 		}
 
 	}
 
 }
-
-

@@ -10,8 +10,7 @@ import com.azure.storage.file.share.models.CopyStatusType;
 import com.azure.storage.file.share.models.ShareFileCopyInfo;
 import com.azure.storage.file.share.models.ShareFileUploadInfo;
 import com.kohang.fsi251notifier.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +20,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class AzureFileAccesser {
 
-	private static final Logger logger = LoggerFactory.getLogger(AzureFileAccesser.class);
-	
 	private static final String SHARE_FILE_NAME = "fsi251file";
 	private static final String SOURCE_DIR = "source";
 	private static final String PROCESSED_DIR = "processed";
@@ -40,16 +38,16 @@ public class AzureFileAccesser {
 		this.sourceDirClient = shareClient.getDirectoryClient(SOURCE_DIR);
 		
 		//create the folder if the folder does not exist
-		if(!this.sourceDirClient.exists()) {
-			logger.info("Source directory is missing, create a new one");
+		if(Boolean.FALSE.equals(this.sourceDirClient.exists())) {
+			log.info("Source directory is missing, create a new one");
 			this.sourceDirClient.create();
 		}
 		
 		this.processedDirClient = shareClient.getDirectoryClient(PROCESSED_DIR);
 		
 		//create the folder if the folder does not exist
-		if(!this.processedDirClient.exists()) {
-			logger.info("Processed directory is missing, create a new one");
+		if(Boolean.FALSE.equals(this.sourceDirClient.exists())) {
+			log.info("Processed directory is missing, create a new one");
 			this.processedDirClient.create();
 		}
 		
@@ -57,7 +55,7 @@ public class AzureFileAccesser {
 		
 	public List<String> getSrcFiles(){
 
-		logger.info("Getting all files from src folder");
+		log.info("Getting all files from src folder");
 
 		List<String> resultList = new ArrayList<>();
 				
@@ -66,7 +64,7 @@ public class AzureFileAccesser {
 			if(item.getName().contains(Util.PDF_EXTENSION)) {
 				
 				ShareFileClient c = sourceDirClient.getFileClient(item.getName());
-				logger.info(c.getFileUrl());
+				log.info(c.getFileUrl());
 				resultList.add(item.getName());
 				
 			}
@@ -79,7 +77,7 @@ public class AzureFileAccesser {
 
 	public List<String> getProcessedFiles(){
 
-		logger.info("Getting all files from processed folder");
+		log.info("Getting all files from processed folder");
 
 		List<String> resultList = new ArrayList<>();
 
@@ -88,7 +86,7 @@ public class AzureFileAccesser {
 			if(item.getName().contains(Util.PDF_EXTENSION)) {
 
 				ShareFileClient c = processedDirClient.getFileClient(item.getName());
-				logger.info(c.getFileUrl());
+				log.info(c.getFileUrl());
 				resultList.add(item.getName());
 
 			}
@@ -109,7 +107,7 @@ public class AzureFileAccesser {
 	public void deleteAllFilesInSrcFolder(){
 
 		getSrcFiles().forEach(name->{
-			logger.info("Deleting file:" + name);
+			log.info("Deleting file:" + name);
 			ShareFileClient sc = sourceDirClient.getFileClient(name);
 			sc.delete();
 
@@ -119,7 +117,7 @@ public class AzureFileAccesser {
 	public void deleteAllFilesInProcessedFolder(){
 
 		getProcessedFiles().forEach(name->{
-			logger.info("Deleting file:" + name);
+			log.info("Deleting file:" + name);
 			ShareFileClient sc = processedDirClient.getFileClient(name);
 			sc.delete();
 
@@ -143,7 +141,7 @@ public class AzureFileAccesser {
 		final ShareFileCopyInfo value = pollResponse.getValue();
 
 		if (value.getCopyStatus().equals(CopyStatusType.SUCCESS)) {
-			logger.info(sc.getFileUrl() + " copy completed. Delete will be executed");
+			log.info(sc.getFileUrl() + " copy completed. Delete will be executed");
 			sc.delete();
 		}
 
@@ -171,28 +169,26 @@ public class AzureFileAccesser {
 
 	}
 
-	public String uploadToSrcFolder(String fileName, long maxSize, InputStream is) {
+	public void uploadToSrcFolder(String fileName, long maxSize, InputStream is) {
 
-		return uploadToFolder(this.sourceDirClient,fileName,maxSize,is);
-
-	}
-
-	public String uploadToProcessedFolder(String fileName, long maxSize, InputStream is) {
-
-		return uploadToFolder(this.processedDirClient,fileName,maxSize,is);
+		uploadToFolder(this.sourceDirClient,fileName,maxSize,is);
 
 	}
 
-	private String uploadToFolder(ShareDirectoryClient client, String fileName, long maxSize, InputStream is) {
+	public void uploadToProcessedFolder(String fileName, long maxSize, InputStream is) {
+
+		uploadToFolder(this.processedDirClient,fileName,maxSize,is);
+
+	}
+
+	private void uploadToFolder(ShareDirectoryClient client, String fileName, long maxSize, InputStream is) {
 
 		if(is!=null&&!fileName.isEmpty()&&maxSize>0) {
 
 			ShareFileClient sc = client.createFile(fileName, maxSize);
 			ShareFileUploadInfo response = sc.upload(is,maxSize,null);
-			return response.getETag();
+			log.info("ETag of uploaded file: {}", response.getETag());
 		}
-
-		return "";
 
 	}
 
@@ -201,7 +197,7 @@ public class AzureFileAccesser {
 		try {
 			return uploadToFolder(this.sourceDirClient,file);
 		} catch (IOException e) {
-			logger.error("Upload to Source folder error");
+			log.error("Upload to Source folder error");
 			e.printStackTrace();
 		}
 
@@ -214,7 +210,7 @@ public class AzureFileAccesser {
 		try {
 			return uploadToFolder(this.processedDirClient,file);
 		} catch (IOException e) {
-			logger.error("Upload to Processed folder error");
+			log.error("Upload to Processed folder error");
 			e.printStackTrace();
 		}
 

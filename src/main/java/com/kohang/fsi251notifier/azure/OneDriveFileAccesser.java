@@ -2,37 +2,35 @@ package com.kohang.fsi251notifier.azure;
 
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
+import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Component
 public class OneDriveFileAccesser {
 
-    private static final Logger logger = LoggerFactory.getLogger(OneDriveFileAccesser.class);
-
     private static final String DEFAULT_SCOPE = "https://graph.microsoft.com/.default";
 
-    private static final String PDF_EXTENSION = ".pdf";
+    private final String encodedOneDriveShareUrl;
 
-    private final String ENCODED_ONE_DRIVE_SHARE_URL;
-
-    private final GraphServiceClient graphClient;
+    private final GraphServiceClient<Request> graphClient;
 
     public OneDriveFileAccesser(@Value("#{systemProperties['azure.client.id']!=null && systemProperties['azure.client.id']!='' ? systemProperties['azure.client.id'] : systemEnvironment['azure_client_id']}"
-                                ) String clientId,
+    ) String clientId,
                                 @Value("#{systemProperties['azure.client.secret']!=null && systemProperties['azure.client.secret']!='' ? systemProperties['azure.client.secret'] : systemEnvironment['azure_client_secret']}"
                                 ) String clientSecret,
                                 @Value("#{systemProperties['azure.tenant.id']!=null && systemProperties['azure.tenant.id']!='' ? systemProperties['azure.tenant.id'] : systemEnvironment['azure_tenant_id']}"
@@ -40,9 +38,9 @@ public class OneDriveFileAccesser {
                                 @Value("#{systemProperties['onedrive.share.url']!=null && systemProperties['onedrive.share.url']!='' ? systemProperties['onedrive.share.url'] : systemEnvironment['onedrive_share_url']}"
                                 ) String onedriveShareUrl) {
 
-        this.ENCODED_ONE_DRIVE_SHARE_URL = encodeURLinBase64Format(onedriveShareUrl.strip());
+        encodedOneDriveShareUrl = encodeURLinBase64Format(onedriveShareUrl.strip());
 
-        final List<String> SCOPES = Arrays.asList(DEFAULT_SCOPE);
+        final List<String> scopes = Collections.singletonList(DEFAULT_SCOPE);
 
         final ClientSecretCredential clientSecretCredential = new ClientSecretCredentialBuilder()
                 .clientId(clientId.strip())
@@ -51,38 +49,37 @@ public class OneDriveFileAccesser {
                 .build();
 
         final TokenCredentialAuthProvider tokenCredAuthProvider =
-                new TokenCredentialAuthProvider(SCOPES, clientSecretCredential);
+                new TokenCredentialAuthProvider(scopes, clientSecretCredential);
 
-        this.graphClient = GraphServiceClient
+        graphClient = GraphServiceClient
                 .builder()
                 .authenticationProvider(tokenCredAuthProvider)
                 .buildClient();
     }
 
-    public DriveItemCollectionPage getDriveItemCollectionPageFromRootFolder(){
-        logger.info(ENCODED_ONE_DRIVE_SHARE_URL);
-        return graphClient.shares(ENCODED_ONE_DRIVE_SHARE_URL).driveItem().children().buildRequest().get();
+    public DriveItemCollectionPage getDriveItemCollectionPageFromRootFolder() {
+        log.info(encodedOneDriveShareUrl);
+        return graphClient.shares(encodedOneDriveShareUrl).driveItem().children().buildRequest().get();
     }
 
-    public DriveItemCollectionPage getDriverItemCollectionPage(DriveItem item){
+    public DriveItemCollectionPage getDriverItemCollectionPage(DriveItem item) {
         return graphClient.shares(encodeURLinBase64Format(item.webUrl)).driveItem().children().buildRequest().get();
     }
 
-    public InputStream getInputStreamFromDriveItem(DriveItem driveItem) {
+    public InputStream getInputStreamFromDriveItem(DriveItem driveItem) throws InvalidDriveItemException {
 
         if (driveItem != null && driveItem.webUrl != null) {
 
-            logger.info("Getting input stream from following url: " + driveItem.webUrl);
+            log.info("Getting input stream from following url: {}", driveItem.webUrl);
 
-            try{
+            try {
                 return graphClient.shares(encodeURLinBase64Format(driveItem.webUrl)).driveItem().content().buildRequest().get();
-            }catch(ClientException e){
-                logger.error("Getting error while getting input stream");
-                e.printStackTrace();
+            } catch (ClientException e) {
+                log.error("Error occurs while getting input stream", e);
             }
         }
 
-        return null;
+        throw new InvalidDriveItemException("Cannot get input stream from drive item");
     }
 
     private static String encodeURLinBase64Format(String url) {

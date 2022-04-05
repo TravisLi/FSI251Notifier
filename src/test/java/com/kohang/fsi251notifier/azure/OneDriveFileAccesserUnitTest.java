@@ -1,28 +1,29 @@
 package com.kohang.fsi251notifier.azure;
 
+import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.mongodb.assertions.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Slf4j
 @SpringBootTest(classes = {OneDriveFileAccesser.class})
-public class OneDriveFileAccesserUnitTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(OneDriveFileAccesserUnitTest.class);
+class OneDriveFileAccesserUnitTest {
 
     @Autowired
     private OneDriveFileAccesser fileAccesser;
 
     @Test
-    public void testGetDriveItemCollectionPageFromRootFolder() {
+    void testGetDriveItemCollectionPageFromRootFolder() {
 
         DriveItemCollectionPage page = fileAccesser.getDriveItemCollectionPageFromRootFolder();
 
@@ -32,12 +33,12 @@ public class OneDriveFileAccesserUnitTest {
     }
 
     @Test
-    public void testGetDriveItemCollectionPage() {
+    void testGetDriveItemCollectionPage() {
 
         DriveItemCollectionPage page = fileAccesser.getDriveItemCollectionPageFromRootFolder();
 
-        page.getCurrentPage().stream().forEach(item->{
-            logger.info("drive item name:"+item.name);
+        page.getCurrentPage().forEach(item->{
+            log.info("drive item name: {}", item.name);
             DriveItemCollectionPage childPage = fileAccesser.getDriverItemCollectionPage(item);
             assertNotNull(childPage.getCurrentPage());
         });
@@ -45,40 +46,30 @@ public class OneDriveFileAccesserUnitTest {
     }
 
     @Test
-    public void testGetInputStreamFromDriveItem(){
+    void testGetInputStreamFromDriveItem(){
 
         DriveItemCollectionPage page = fileAccesser.getDriveItemCollectionPageFromRootFolder();
 
-        page.getCurrentPage().stream().filter(item->item.name.equals("2020")).forEach(item->{
+        page.getCurrentPage().stream().filter(item->"2020".equals(item.name)).forEach(item->{
 
-            logger.info("drive item name:"+item.name);
+            log.info("drive item name: {}", item.name);
             DriveItemCollectionPage childPage = fileAccesser.getDriverItemCollectionPage(item);
             DriveItem childItem = childPage.getCurrentPage().get(0);
 
             assertNotNull(childItem);
 
-            logger.info("child drive item name:"+item.name);
+            log.info("child drive item name: {}", item.name);
 
-            InputStream is = fileAccesser.getInputStreamFromDriveItem(childItem);
-            assertNotNull(is);
-
-            try {
-                is.close();
-            } catch (IOException e) {
+            try(InputStream is = fileAccesser.getInputStreamFromDriveItem(childItem)){
+                assertNotNull(is);
+            }catch (InvalidDriveItemException | IOException e) {
                 e.printStackTrace();
+                fail();
             }
 
         });
 
     }
-
-    /*private List<DriveItem> getDriveItemWithTargetedCreateDate(){
-
-        //There are file with the create date of 28/2/2022
-        LocalDate createDate = LocalDate.of(2022,2,28);
-        return fileAccesser.getAllDriveItemsInRootFolderWithCreateDate(createDate);
-
-    }*/
 
 }
 

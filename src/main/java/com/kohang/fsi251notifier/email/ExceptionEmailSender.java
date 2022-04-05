@@ -4,10 +4,7 @@ import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.model.ExceptionData;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
-import com.kohang.fsi251notifier.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,14 +17,13 @@ import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class ExceptionEmailSender extends EmailSender {
 
-    private static final Logger logger = LoggerFactory.getLogger(Fsi251EmailSender.class);
     private static final String MESSAGE = "以下新增證書有問題，請處理</br>";
     private static final String EMAIL_SUBJECT = "新增證書問題提示";
 
@@ -46,14 +42,28 @@ public class ExceptionEmailSender extends EmailSender {
         this.exceptionRepo = e;
     }
 
-    public Integer run() {
-        logger.info("Finding certs has problem");
-        List<ExceptionData> dataList = exceptionRepo.findByResolved(false);
+    private static String buildHTMLTable(List<ExceptionData> list) {
 
-        return processDataList(dataList);
+        StringBuilder builder = new StringBuilder();
+        builder.append(HTML_TABLE_HEAD_TEMPLATE);
+
+        for (ExceptionData exceptionData : list) {
+
+            FSI251Data fsi251Data = exceptionData.getFsi251Data();
+            if (fsi251Data != null) {
+                builder.append(String.format(HTML_TABLE_ROW_TEMPLATE, fsi251Data.getCertNo(), exceptionData.getRemark()));
+            }
+        }
+        return String.format(HTML_TABLE_TEMPLATE, builder);
     }
 
-    private Integer processDataList(List<ExceptionData> exceptionDataList) {
+    public Integer run() {
+        log.info("Finding certs has problem");
+        List<ExceptionData> dataList = exceptionRepo.findByResolved(false);
+        return processExceptionDataList(dataList);
+    }
+
+    private Integer processExceptionDataList(List<ExceptionData> exceptionDataList) {
 
         List<File> fileList = new LinkedList<>();
 
@@ -69,11 +79,11 @@ public class ExceptionEmailSender extends EmailSender {
 
             if (fsi251Data != null && fsi251Data.getFileName() != null) {
 
-                logger.info("Preparing attachment for " + fsi251Data.getFileName());
+                log.info("Preparing attachment for " + fsi251Data.getFileName());
 
                 String tmpdir = System.getProperty("java.io.tmpdir");
 
-                logger.debug(tmpdir);
+                log.debug(tmpdir);
 
                 File file = new File(tmpdir + File.separator + fsi251Data.getFileName());
 
@@ -81,13 +91,13 @@ public class ExceptionEmailSender extends EmailSender {
 
                     Files.write(file.toPath(), fileAccesser.getProcessedFileByteArrayOutputStream(fsi251Data.getFileName()).toByteArray());
 
-                    logger.debug("Total File Size Count:" + fileSizeCount);
-                    logger.debug("File Size: " + file.length());
+                    log.debug("Total File Size Count:" + fileSizeCount);
+                    log.debug("File Size: " + file.length());
 
                     if (fileSizeCount + file.length() > MAX_ATTACHMENT_SIZE) {
 
                         emailCounter++;
-                        this.send(sendList, fileList, emailCounter.toString());
+                        send(sendList, fileList, emailCounter.toString());
 
                         //reset parameter
                         sendList.clear();
@@ -104,8 +114,7 @@ public class ExceptionEmailSender extends EmailSender {
                     }
 
                 } catch (IOException e) {
-                    logger.error("File processing error");
-                    e.printStackTrace();
+                    log.error("File processing error", e);
                     sendList.add(data);
                 }
 
@@ -116,7 +125,7 @@ public class ExceptionEmailSender extends EmailSender {
         //if there are data left need to be sent out
         if (!sendList.isEmpty()) {
             emailCounter++;
-            this.send(sendList, fileList, emailCounter.toString());
+            send(sendList, fileList, emailCounter.toString());
         }
 
         return emailCounter;
@@ -125,7 +134,7 @@ public class ExceptionEmailSender extends EmailSender {
     private void send(List<ExceptionData> dataList, List<File> fileList, String counter) {
 
         try {
-            Message message = this.createMessage(counter);
+            Message message = createMessage(counter);
 
             StringBuilder builder = new StringBuilder();
             builder.append(MESSAGE);
@@ -137,46 +146,36 @@ public class ExceptionEmailSender extends EmailSender {
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(mimeBodyPart);
 
-            for (File file : fileList) {
-
-                MimeBodyPart attachmentBodyPart = new MimeBodyPart();
-
-                try {
-                    attachmentBodyPart.attachFile(file);
-                    multipart.addBodyPart(attachmentBodyPart);
-                } catch (IOException e) {
-                    logger.error("Attachment Preparation Error");
-                    e.printStackTrace();
-                }
-
-            }
+            attachFiles(fileList, multipart);
 
             message.setContent(multipart);
-            this.send(message);
+            send(message);
 
         } catch (MessagingException e) {
-            e.printStackTrace();
-            logger.error("Email Message Prepare Exception");
+            log.error("Email Message Prepare Exception", e);
         } finally {
-
             for (File file : fileList) {
-                logger.debug("Deleting file " + file.getAbsolutePath() + " result:" + file.delete());
+                try {
+                    log.debug("Deleting file " + file.getAbsolutePath() + " result:" + file.delete());
+                }catch(Exception e){
+                    log.error("Error occurs whiling deleting files", e);
+                }
             }
         }
     }
 
-    private static String buildHTMLTable(List<ExceptionData> list) {
+    private void attachFiles(List<File> fileList, Multipart multipart) throws MessagingException {
+        for (File file : fileList) {
 
-        StringBuilder builder = new StringBuilder();
-        builder.append(HTML_TABLE_HEAD_TEMPLATE);
+            MimeBodyPart attachmentBodyPart = new MimeBodyPart();
 
-        for (ExceptionData exceptionData : list) {
-
-            FSI251Data fsi251Data = exceptionData.getFsi251Data();
-            if (fsi251Data != null) {
-                builder.append(String.format(HTML_TABLE_ROW_TEMPLATE, fsi251Data.getCertNo(), exceptionData.getRemark()));
+            try {
+                attachmentBodyPart.attachFile(file);
+                multipart.addBodyPart(attachmentBodyPart);
+            } catch (IOException e) {
+                log.error("Attachment Preparation Error", e);
             }
+
         }
-        return String.format(HTML_TABLE_TEMPLATE, builder);
     }
 }

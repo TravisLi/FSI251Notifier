@@ -3,13 +3,11 @@ package com.kohang.fsi251notifier.controller;
 import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.azure.CloudFileCopier;
 import com.kohang.fsi251notifier.azure.FSI251Recognizer;
-import com.kohang.fsi251notifier.email.EmailSender;
 import com.kohang.fsi251notifier.email.ExceptionEmailSender;
 import com.kohang.fsi251notifier.email.Fsi251EmailSender;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -18,12 +16,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+@Slf4j
 @Controller
 @RequestMapping("/start")
 public class ServiceController {
 
-	private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
-
+	private static final String MANUAL = "manual";
 	private final CloudFileCopier copier;
 	private final Fsi251EmailSender fsi251EmailSender;
 	private final ExceptionEmailSender exceptionEmailSender;
@@ -45,7 +43,7 @@ public class ServiceController {
 
 	@GetMapping("/import")
 	public String importFiles(@AuthenticationPrincipal User user, Model model){
-		logger.info("Import files start");
+		log.info("Import files start");
 
 		new Thread(()->{
 			fileAccesser.deleteAllFilesInSrcFolder();
@@ -58,12 +56,12 @@ public class ServiceController {
 		model.addAttribute("user",user);
 		model.addAttribute("msg","File import started");
 
-		return "manual";
+		return MANUAL;
 	}
 
 	@GetMapping("/email")
 	public String sendEmail(@AuthenticationPrincipal User user, Model model){
-		logger.info("Send email start");
+		log.info("Send email start");
 
 		new Thread(fsi251EmailSender::run).start();
 		new Thread(exceptionEmailSender::run).start();
@@ -71,19 +69,19 @@ public class ServiceController {
 		model.addAttribute("user",user);
 		model.addAttribute("msg","Email send started");
 
-		return "manual";
+		return MANUAL;
 	}
 
 	@GetMapping("/recognize")
 	public String recognize(@AuthenticationPrincipal User user, Model model){
-		logger.info("Recognition start");
+		log.info("Recognition start");
 
 		new Thread(recognizer::run).start();
 
 		model.addAttribute("user",user);
 		model.addAttribute("msg","Recognition started");
 
-		return "manual";
+		return MANUAL;
 	}
 
 

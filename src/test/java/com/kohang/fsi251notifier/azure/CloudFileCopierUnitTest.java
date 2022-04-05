@@ -1,6 +1,5 @@
 package com.kohang.fsi251notifier.azure;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -13,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = {AzureFileAccesser.class,OneDriveFileAccesser.class,CloudFileCopier.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class CloudFileCopierUnitTest {
+class CloudFileCopierUnitTest {
 
     @Autowired
     private CloudFileCopier copier;
@@ -22,13 +21,13 @@ public class CloudFileCopierUnitTest {
     private AzureFileAccesser fileAccesser;
 
     @BeforeEach
-    public void clearFiles(){
+    void clearFiles(){
         fileAccesser.deleteAllFilesInSrcFolder();
     }
 
     @Test
     //TODO the result need to be dynamic
-    public void testCopyAllOneDriveCertsToAzureSrcDrive(){
+    void testCopyAllOneDriveCertsToAzureSrcDrive(){
 
         copier.copyAllOneDriveCertsToAzureSrcDrive();
 
@@ -37,7 +36,7 @@ public class CloudFileCopierUnitTest {
     }
 
     @Test
-    public void testCopyAllOneDriveCertsToAzureSrcDriveWithCreateDate(){
+    void testCopyAllOneDriveCertsToAzureSrcDriveWithCreateDate(){
 
         LocalDate createDate = LocalDate.of(2022,3,23);
 
