@@ -42,11 +42,7 @@ public class Scheduler {
     @Scheduled(cron = "${send.email.cron}")
     public void sendEmailNotification(){
         logger.info("Scheduled email Sent Start");
-        try {
-            emailSender.run();
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
+        emailSender.run();
     }
 
     //prod: 0 0 1 * * * execute at 01:00:00 everyday

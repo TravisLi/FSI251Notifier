@@ -33,10 +33,10 @@ public class AzureFileAccesser {
 	
 	private final ShareDirectoryClient sourceDirClient;
 	private final ShareDirectoryClient processedDirClient;
-	
-	public AzureFileAccesser(@Value("${azure_storage}")String storageConnectionStr) {
-		
-		ShareClient shareClient = new ShareServiceClientBuilder().connectionString(storageConnectionStr).buildClient().getShareClient(SHARE_FILE_NAME);	
+
+	public AzureFileAccesser(@Value("#{systemProperties['azure.storage']!=null && systemProperties['azure.storage']!=''? systemProperties['azure.storage'] : systemEnvironment['azure_storage']}")String storageConnectionStr) {
+
+		ShareClient shareClient = new ShareServiceClientBuilder().connectionString(storageConnectionStr.strip()).buildClient().getShareClient(SHARE_FILE_NAME);
 		this.sourceDirClient = shareClient.getDirectoryClient(SOURCE_DIR);
 		
 		//create the folder if the folder does not exist
@@ -201,21 +201,5 @@ public class AzureFileAccesser {
 
 		return "";
 	}
-
-	/*public List<String> uploadToSrcFolder(List<File> fileList){
-
-		List<String> fileNameList = new LinkedList<>();
-		fileList.forEach(f->{
-			String result = uploadToSrcFolder(f);
-			if(!result.isEmpty()){
-				fileNameList.add(f.getName());
-			}
-			if(f.exists()){
-				f.delete();
-			}
-		});
-
-		return fileNameList;
-	}*/
 
 }

@@ -35,10 +35,13 @@ public class FSI251Recognizer {
     private final AzureFileAccesser accesser;
 
     @Autowired
-    public FSI251Recognizer(@Value("${azure_recognition_key}") String key, @Value("${azure_recognition_endpoint}") String endpoint, AzureFileAccesser fa, FSI251Repository r) {
+    public FSI251Recognizer(@Value("#{systemProperties['azure.recognition.key']!=null && systemProperties['azure.recognition.key']!='' ? systemProperties['azure.recognition.key'] : systemEnvironment['azure_recognition_key']}") String key,
+                            @Value("#{systemProperties['azure.recognition.endpoint']!=null && systemProperties['azure.recognition.endpoint']!='' ? systemProperties['azure.recognition.endpoint'] : systemEnvironment['azure_recognition_endpoint']}") String endpoint,
+                            AzureFileAccesser fa,
+                            FSI251Repository r) {
         this.client = new DocumentAnalysisClientBuilder()
-                .credential(new AzureKeyCredential(key))
-                .endpoint(endpoint)
+                .credential(new AzureKeyCredential(key.strip()))
+                .endpoint(endpoint.strip())
                 .buildClient();
         this.accesser = fa;
         this.repository = r;
@@ -61,8 +64,10 @@ public class FSI251Recognizer {
 
             InputStream is = new ByteArrayInputStream(os.toByteArray());
 
+            PDDocument main = null;
+
             try {
-                PDDocument main = PDDocument.load(is);
+                main = PDDocument.load(is);
 
 				logger.info("Splitting the Pdf");
 
@@ -120,6 +125,10 @@ public class FSI251Recognizer {
                     } catch (IOException e) {
                         logger.error("Pdf pages splitting error");
                         e.printStackTrace();
+                    }finally {
+                        if(sub!=null) {
+                            sub.close();
+                        }
                     }
 
                 }
@@ -128,6 +137,14 @@ public class FSI251Recognizer {
             } catch (IOException e) {
                 logger.error("PDF loading error");
                 e.printStackTrace();
+            }finally{
+                if(main!=null){
+                    try {
+                        main.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             //do it one by one rather than in whole list

@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.kohang</groupId>
 	<artifactId>fsi251-notifier</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>FSI251 Notifier</name>
 	<description>Send Reminder for Renewal</description>
 
@@ -200,7 +200,22 @@
 									<targetDir>/app</targetDir>
 								</assembly>
 								<entryPoint>
-									java -jar /app/${project.artifactId}-${project.version}.jar
+									java -jar \
+									-Dazure.client.id="$(cat /run/secrets/azure_client_id)" \
+									-Dazure.client.secret="$(cat /run/secrets/azure_client_secret)" \
+									-Dazure.tenant.id="$(cat /run/secrets/azure_tenant_id)" \
+									-Dazure.recognition.endpoint="$(cat /run/secrets/azure_recognition_endpoint)" \
+									-Dazure.recognition.key="$(cat /run/secrets/azure_recognition_key)" \
+									-Dazure.storage="$(cat /run/secrets/azure_storage)" \
+									-Ddb.user="$(cat /run/secrets/db_user)" \
+									-Ddb.password="$(cat /run/secrets/db_password)" \
+									-Demail.username="$(cat /run/secrets/email_username)" \
+									-Demail.password="$(cat /run/secrets/email_password)" \
+									-Dweb.user="$(cat /run/secrets/web_user)" \
+									-Dweb.password="$(cat /run/secrets/web_password)" \
+									-Donedrive.share.url="$(cat /run/secrets/onedrive_share_url)" \
+									-Dweb.password="$(cat /run/secrets/web_password)" \
+									/app/${project.artifactId}-${project.version}.jar
 								</entryPoint>
 							</build>
 							<run>

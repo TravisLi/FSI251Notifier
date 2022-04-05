@@ -49,11 +49,7 @@ public class ServiceController {
 		logger.info("Send email start");
 
 		new Thread(() -> {
-			try {
-				sender.run();
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
+			sender.run();
 		}).start();
 
 		model.addAttribute("user",user);

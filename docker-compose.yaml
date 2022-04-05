@@ -1,0 +1,107 @@
+version: "3.7"
+
+services:
+ apps:
+  image: travisli/fsi251-notifier:0.0.5-SNAPSHOT
+  ports: 
+   - 7070:8080
+  networks:
+   - app-net
+  depends_on:
+   - mongo
+  environment:
+   db_host: mongo
+   spring_profiles_active: "prod"
+   azure_client_id: /run/secrets/azure_client_id
+   azure_client_secret: /run/secrets/azure_client_secret
+   azure_tenant_id: /run/secrets/azure_tenant_id
+   azure_recognition_endpoint: /run/secrets/azure_recognition_endpoint
+   azure_recognition_key: /run/secrets/azure_recognition_key
+   azure_storage: /run/secrets/azure_storage
+   db_password: /run/secrets/db_password
+   db_user: /run/secrets/db_user
+   email_password: /run/secrets/email_password
+   email_username: /run/secrets/email_username   
+   web_password: /run/secrets/web_password
+   web_user: /run/secrets/web_user
+   onedrive_share_url: /run/secrets/onedrive_share_url
+
+  secrets:
+   - azure_client_id
+   - azure_client_secret
+   - azure_tenant_id
+   - azure_recognition_key
+   - azure_recognition_endpoint
+   - azure_storage
+   - db_user
+   - db_password
+   - email_username
+   - email_password
+   - web_user
+   - web_password
+   - onedrive_share_url
+
+ mongo-express:
+  image: mongo-express:0.54.0
+  ports: 
+   - 7071:8081
+  networks:
+   - app-net
+  depends_on:
+   - mongo
+  environment:
+   ME_CONFIG_BASICAUTH_USERNAME_FILE: /run/secrets/db_user
+   ME_CONFIG_BASICAUTH_PASSWORD_FILE: /run/secrets/db_password
+   ME_CONFIG_MONGODB_ADMINUSERNAME_FILE: /run/secrets/db_user
+   ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/db_password
+  secrets:
+   - db_user
+   - db_password
+   
+ mongo:
+  image: mongo:4.4.13
+  volumes: 
+   - mongo_db:/data/db
+  networks:
+   - app-net
+  environment:
+   MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/db_user
+   MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_password
+  secrets:
+   - db_user
+   - db_password
+ 
+volumes:
+ mongo_db:
+
+networks:
+ app-net:
+  name: app-net
+
+secrets:
+ azure_client_id:
+  external: true
+ azure_client_secret:
+  external: true
+ azure_tenant_id:
+  external: true
+ azure_recognition_key:
+  external: true
+ azure_recognition_endpoint:
+  external: true
+ azure_storage:
+  external: true
+ db_password:
+  external: true
+ db_user:
+  external: true
+ email_username:
+  external: true
+ email_password:
+  external: true
+ web_user:
+  external: true
+ web_password:
+  external: true
+ onedrive_share_url:
+  external: true

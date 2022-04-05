@@ -31,16 +31,23 @@ public class OneDriveFileAccesser {
 
     private final GraphServiceClient graphClient;
 
-    public OneDriveFileAccesser(@Value("${azure_client_id}") String clientId, @Value("${azure_client_secret}") String clientSecret, @Value("${azure_tenant_id}") String tenantId, @Value("${onedrive_share_url}") String onedriveShareUrl) {
+    public OneDriveFileAccesser(@Value("#{systemProperties['azure.client.id']!=null && systemProperties['azure.client.id']!='' ? systemProperties['azure.client.id'] : systemEnvironment['azure_client_id']}"
+                                ) String clientId,
+                                @Value("#{systemProperties['azure.client.secret']!=null && systemProperties['azure.client.secret']!='' ? systemProperties['azure.client.secret'] : systemEnvironment['azure_client_secret']}"
+                                ) String clientSecret,
+                                @Value("#{systemProperties['azure.tenant.id']!=null && systemProperties['azure.tenant.id']!='' ? systemProperties['azure.tenant.id'] : systemEnvironment['azure_tenant_id']}"
+                                ) String tenantId,
+                                @Value("#{systemProperties['onedrive.share.url']!=null && systemProperties['onedrive.share.url']!='' ? systemProperties['onedrive.share.url'] : systemEnvironment['onedrive_share_url']}"
+                                ) String onedriveShareUrl) {
 
-        this.ENCODED_ONE_DRIVE_SHARE_URL = encodeURLinBase64Format(onedriveShareUrl);
+        this.ENCODED_ONE_DRIVE_SHARE_URL = encodeURLinBase64Format(onedriveShareUrl.strip());
 
         final List<String> SCOPES = Arrays.asList(DEFAULT_SCOPE);
 
         final ClientSecretCredential clientSecretCredential = new ClientSecretCredentialBuilder()
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .tenantId(tenantId)
+                .clientId(clientId.strip())
+                .clientSecret(clientSecret.strip())
+                .tenantId(tenantId.strip())
                 .build();
 
         final TokenCredentialAuthProvider tokenCredAuthProvider =
@@ -77,177 +84,6 @@ public class OneDriveFileAccesser {
 
         return null;
     }
-
-    /*public List<DriveItem> getAllDriveItemsInRootFolder() {
-        logger.info("Getting drive items from root folder");
-
-        List<DriveItem> resultList = new LinkedList<>();
-
-        DriveItemCollectionPage page = graphClient.shares(ENCODED_ONE_DRIVE_SHARE_URL).driveItem().children().buildRequest().get();
-
-        if (page != null) {
-            resultList = processDriveItemCollectionPage(page);
-        }
-
-        return resultList;
-    }
-
-    public List<DriveItem> getAllDriveItemsInRootFolderWithCreateDate(LocalDate createDate) {
-        logger.info("Getting drive items from root folder with create date:" + createDate.toString());
-
-        List<DriveItem> resultList = new LinkedList<>();
-
-        DriveItemCollectionPage page = graphClient.shares(ENCODED_ONE_DRIVE_SHARE_URL).driveItem().children().buildRequest().get();
-
-        if (page != null) {
-            resultList = processDriveItemCollectionPageWithCreateDate(page, createDate);
-        }
-
-        return resultList;
-    }*/
-
-    /*private List<DriveItem> processDriveItemCollectionPageWithCreateDate(DriveItemCollectionPage page, LocalDate createDate) {
-
-        List<DriveItem> result = new LinkedList<>();
-
-        OffsetDateTime fromOffsetDateTime = createDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
-        OffsetDateTime toOffsetDateTime = createDate.atStartOfDay(ZoneOffset.UTC).minusDays(-1).toOffsetDateTime();
-
-        logger.debug("fromOffSetDateTime:" + fromOffsetDateTime);
-        logger.debug("toOffSetDateTime:" + toOffsetDateTime);
-
-        page.getCurrentPage().forEach(driveItem -> {
-            //it is a folder
-            if (driveItem.folder != null) {
-                logger.info("processing folder with name: " + driveItem.name);
-                if (driveItem.webUrl != null) {
-                    DriveItemCollectionPage folderPage = graphClient.shares(encodeURLinBase64Format(driveItem.webUrl)).driveItem().children().buildRequest().get();
-                    if (folderPage != null) {
-                        result.addAll(processDriveItemCollectionPageWithCreateDate(folderPage, createDate));
-                    }
-                }
-                //it is a file
-            } else {
-                logger.info("processing file with name: " + driveItem.name);
-                if (driveItem.name != null) {
-                    if (driveItem.name.contains(PDF_EXTENSION)) {
-                        logger.info("Drive item create date: " + driveItem.createdDateTime);
-                        if (driveItem.createdDateTime != null) {
-                            if ((driveItem.createdDateTime.isAfter(fromOffsetDateTime) || driveItem.createdDateTime.isEqual(fromOffsetDateTime)) && driveItem.createdDateTime.isBefore(toOffsetDateTime)) {
-                                logger.info("This item is created within the date");
-                                result.add(driveItem);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-
-        if (page.getNextPage() != null) {
-            DriveItemCollectionPage nextPage = page.getNextPage().buildRequest().get();
-            if (nextPage != null) {
-                result.addAll(processDriveItemCollectionPageWithCreateDate(nextPage, createDate));
-            }
-
-        }
-
-        return result;
-    }*/
-
-    /*private List<DriveItem> processDriveItemCollectionPage(DriveItemCollectionPage page) {
-
-        List<DriveItem> result = new LinkedList<>();
-
-        page.getCurrentPage().forEach(driveItem -> {
-            //it is a folder
-            if (driveItem.folder != null) {
-
-                logger.info("processing folder with name: " + driveItem.name);
-                if (driveItem.webUrl != null) {
-                    DriveItemCollectionPage folderPage = graphClient.shares(encodeURLinBase64Format(driveItem.webUrl)).driveItem().children().buildRequest().get();
-                    if (folderPage != null) {
-                        result.addAll(processDriveItemCollectionPage(folderPage));
-                    }
-                }
-                //it is a file
-            } else {
-
-                if (driveItem.name != null) {
-                    logger.info("processing file with name: " + driveItem.name);
-
-                    if (driveItem.name.contains(PDF_EXTENSION)) {
-                        result.add(driveItem);
-                    }
-                }
-            }
-        });
-
-        if (page.getNextPage() != null) {
-            DriveItemCollectionPage nextPage = page.getNextPage().buildRequest().get();
-            if (nextPage != null) {
-                result.addAll(processDriveItemCollectionPage(nextPage));
-            }
-
-        }
-
-        return result;
-    }*/
-
-    /*public List<File> getFilesByDriveItems(List<DriveItem> driveItemList) {
-
-        List<File> fileList = new LinkedList<>();
-
-        driveItemList.forEach(driveItem -> {
-
-            File file = this.getFileByDriveItem(driveItem);
-
-            if (file != null) {
-                fileList.add(file);
-            }
-
-        });
-
-        return fileList;
-    }*/
-
-    /*public  File getFileByDriveItem(DriveItem driveItem) {
-
-        if (driveItem.name != null && driveItem.webUrl != null) {
-
-            logger.info("Saving file from following url: " + driveItem.webUrl);
-
-            String fileName = driveItem.name;
-
-            InputStream stream = graphClient.shares(encodeURLinBase64Format(driveItem.webUrl)).driveItem().content().buildRequest().get();
-
-            if(stream!=null){
-
-                File file = new File(System.getProperty("java.io.tmpdir") + File.separator + fileName);
-
-                try {
-                    Files.copy(stream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    logger.error("Cannot get the file from one driver");
-                    e.printStackTrace();
-                    if (file.exists()) {
-                        if(file.delete()){
-                            logger.info("File is successfully deleted from system");
-                        }else{
-                            logger.warn("File cannot be deleted from system");
-                        }
-                    }
-                    return null;
-                }
-
-                return file;
-
-            }
-
-        }
-
-        return null;
-    }*/
 
     private static String encodeURLinBase64Format(String url) {
         String base64Value = Base64.getEncoder().withoutPadding().encodeToString(url.getBytes(StandardCharsets.UTF_8));

@@ -1,9 +1,11 @@
 package com.kohang.fsi251notifier.email;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ import com.kohang.fsi251notifier.util.TestUtil;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EmailSenderIntegrationTest {
 
-	private static Logger logger = LoggerFactory.getLogger(EmailSenderIntegrationTest.class);
+	private static final Logger logger = LoggerFactory.getLogger(EmailSenderIntegrationTest.class);
 
 	@Autowired
 	private EmailSender emailSender;
@@ -52,7 +54,13 @@ public class EmailSenderIntegrationTest {
 		
 	@Test
 	public void run() {
-		assertDoesNotThrow(()->emailSender.run());
+
+		//those sample has cert date in Dec-2021
+		LocalDate startDate = LocalDate.of(2021,12,1);
+		LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+		assertEquals(1,emailSender.run(startDate,endDate));
+
 	}
 	
 }
