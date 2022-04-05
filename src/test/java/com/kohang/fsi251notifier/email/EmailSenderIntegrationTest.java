@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 
+import com.kohang.fsi251notifier.azure.FSI251Recognizer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,6 +33,9 @@ public class EmailSenderIntegrationTest {
 	private AzureFileAccesser fileAccesser;
 
 	@Autowired
+	FSI251Recognizer recognizer;
+
+	@Autowired
 	private ResourceLoader resourceLoader;
 	
 	@BeforeAll
@@ -54,6 +58,9 @@ public class EmailSenderIntegrationTest {
 		
 	@Test
 	public void run() {
+
+		//make the upload available in DB
+		recognizer.run();
 
 		//those sample has cert date in Dec-2021
 		LocalDate startDate = LocalDate.of(2021,12,1);

@@ -5,6 +5,7 @@ import com.azure.ai.formrecognizer.DocumentAnalysisClientBuilder;
 import com.azure.ai.formrecognizer.models.AnalyzedDocument;
 import com.azure.core.credential.AzureKeyCredential;
 import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.ExceptionRepository;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 import com.kohang.fsi251notifier.util.Util;
 import org.apache.pdfbox.multipdf.Splitter;
@@ -16,7 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,20 +35,23 @@ public class FSI251Recognizer {
     private static final String CERT_DATE_KEY = "certDate";
 
     private final DocumentAnalysisClient client;
-    private final FSI251Repository repository;
+    private final FSI251Repository fsi251Repo;
+    private final ExceptionRepository exceptionRepo;
     private final AzureFileAccesser accesser;
 
     @Autowired
     public FSI251Recognizer(@Value("#{systemProperties['azure.recognition.key']!=null && systemProperties['azure.recognition.key']!='' ? systemProperties['azure.recognition.key'] : systemEnvironment['azure_recognition_key']}") String key,
                             @Value("#{systemProperties['azure.recognition.endpoint']!=null && systemProperties['azure.recognition.endpoint']!='' ? systemProperties['azure.recognition.endpoint'] : systemEnvironment['azure_recognition_endpoint']}") String endpoint,
                             AzureFileAccesser fa,
-                            FSI251Repository r) {
+                            FSI251Repository f,
+                            ExceptionRepository e) {
         this.client = new DocumentAnalysisClientBuilder()
                 .credential(new AzureKeyCredential(key.strip()))
                 .endpoint(endpoint.strip())
                 .buildClient();
         this.accesser = fa;
-        this.repository = r;
+        this.fsi251Repo = f;
+        this.exceptionRepo = e;
     }
 
     //save cert file to DB, run once a day
@@ -69,7 +76,7 @@ public class FSI251Recognizer {
             try {
                 main = PDDocument.load(is);
 
-				logger.info("Splitting the Pdf");
+                logger.info("Splitting the Pdf");
 
                 // Splitting the pages into multiple PDFs
                 List<PDDocument> pages = new Splitter().split(main);
@@ -84,49 +91,49 @@ public class FSI251Recognizer {
 
                         sub.save(subOs);
 
-						String subFileName = fileName;
+                        String subFileName = fileName;
 
-						if(pages.size()>1){
-							subFileName = fileName.replace(Util.PDF_EXTENSION, "-" + pageNo++ + Util.PDF_EXTENSION);
-							logger.info("Rename each page to " + subFileName);
-						}
+                        if (pages.size() > 1) {
+                            subFileName = fileName.replace(Util.PDF_EXTENSION, "-" + pageNo++ + Util.PDF_EXTENSION);
+                            logger.info("Rename each page to " + subFileName);
+                        }
 
                         InputStream subIs = new ByteArrayInputStream(subOs.toByteArray());
 
-                        FSI251Data data = this.analyzeDocument(subFileName,subIs,subOs.size());
+                        FSI251Data data = this.analyzeDocument(subFileName, subIs, subOs.size());
 
-						//if the document does not contain cert no and cert date, will skip the check
-						if (data.getCertNo() != null && data.getCertDate() != null) {
+                        //if the document does not contain cert no and cert date, will skip the check
+                        if (data.getCertNo() != null && data.getCertDate() != null) {
 
-							try {
-								//added for date check, to make sure mongo qurey work
-								Util.convertDateStrToLocalDate(data.getCertDate());
+                            FSI251Data dataInDb = fsi251Repo.findByCertNo(data.getCertNo());
 
-								FSI251Data dataInDb = repository.findByCertNo(data.getCertNo());
+                            if (dataInDb == null) {
+                                logger.info("Save the record to DB");
+                                try {
+                                    //added for date check, to make sure mongo qurey work
+                                    Util.convertDateStrToLocalDate(data.getCertDate());
+                                } catch (Exception e) {
+                                    logger.error(data.getCertDate() + " cannot format into dd/mm/yyyy format");
+                                    e.printStackTrace();
 
-								if (dataInDb == null) {
-									logger.info("Save the record to DB");
-									repository.save(data);
-                                    //reset it for file accesser to consume
-                                    subIs.reset();
-                                    accesser.uploadToProcessedFolder(subFileName,subOs.size(),subIs);
-									resultList.add(data);
-								} else {
-									logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
-								}
+                                }
+                                fsi251Repo.save(data);
+                                //reset it for file accesser to consume
+                                subIs.reset();
+                                accesser.uploadToProcessedFolder(subFileName, subOs.size(), subIs);
+                                resultList.add(data);
+                            } else {
+                                logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
+                            }
 
-							} catch (Exception e) {
-								logger.error(data.getCertDate() + " cannot format into dd/mm/yyyy format");
-								e.printStackTrace();
-							}
 
-						}
+                        }
 
                     } catch (IOException e) {
                         logger.error("Pdf pages splitting error");
                         e.printStackTrace();
-                    }finally {
-                        if(sub!=null) {
+                    } finally {
+                        if (sub != null) {
                             sub.close();
                         }
                     }
@@ -137,8 +144,8 @@ public class FSI251Recognizer {
             } catch (IOException e) {
                 logger.error("PDF loading error");
                 e.printStackTrace();
-            }finally{
-                if(main!=null){
+            } finally {
+                if (main != null) {
                     try {
                         main.close();
                     } catch (IOException e) {
