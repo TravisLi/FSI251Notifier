@@ -92,9 +92,7 @@ public class AzureFileAccesserUnitTest {
 	@Order(6)
 	public void testGetFileNotFound() {
 		
-		Exception exception = assertThrows(ShareStorageException.class, () ->{
-			fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.NO_FILE);
-		});
+		Exception exception = assertThrows(ShareStorageException.class, () -> fileAccesser.getProcessedFileByteArrayOutputStream(TestUtil.NO_FILE));
 		
 		String expectedMessage = "ResourceNotFound";
 	    String actualMessage = exception.getMessage();
@@ -120,7 +118,25 @@ public class AzureFileAccesserUnitTest {
 		}
 
 	}
-	
+
+	@Test
+	@Order(8)
+	public void testAllFilesInProcessedFolderAreDelete() {
+
+		try {
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
+			assertFalse(fileAccesser.uploadToProcessedFolder(file).isEmpty());
+
+			fileAccesser.deleteAllFilesInProcessedFolder();
+
+			assertTrue(fileAccesser.getProcessedFiles().isEmpty());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 }
 
 

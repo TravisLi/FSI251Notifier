@@ -4,6 +4,7 @@ import com.azure.ai.formrecognizer.DocumentAnalysisClient;
 import com.azure.ai.formrecognizer.DocumentAnalysisClientBuilder;
 import com.azure.ai.formrecognizer.models.AnalyzedDocument;
 import com.azure.core.credential.AzureKeyCredential;
+import com.kohang.fsi251notifier.model.ExceptionData;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
@@ -110,12 +111,16 @@ public class FSI251Recognizer {
                             if (dataInDb == null) {
                                 logger.info("Save the record to DB");
                                 try {
-                                    //added for date check, to make sure mongo qurey work
+                                    //added for date check, to make sure mongo query work
                                     Util.convertDateStrToLocalDate(data.getCertDate());
                                 } catch (Exception e) {
-                                    logger.error(data.getCertDate() + " cannot format into dd/mm/yyyy format");
+                                    String errorMsg = data.getCertDate() + " cannot format into dd/mm/yyyy format";
+                                    logger.error(errorMsg);
                                     e.printStackTrace();
-
+                                    ExceptionData exception = new ExceptionData(data,errorMsg);
+                                    exceptionRepo.save(exception);
+                                    //remove the date to prevent fail during notification email send
+                                    data.setCertDate("");
                                 }
                                 fsi251Repo.save(data);
                                 //reset it for file accesser to consume
@@ -125,10 +130,7 @@ public class FSI251Recognizer {
                             } else {
                                 logger.warn(String.format("Cert No %s: already exist", data.getCertNo()));
                             }
-
-
                         }
-
                     } catch (IOException e) {
                         logger.error("Pdf pages splitting error");
                         e.printStackTrace();
@@ -175,19 +177,15 @@ public class FSI251Recognizer {
                     .getFinalResult()
                     .getDocuments().stream()
                     .map(AnalyzedDocument::getFields)
-                    .forEach(documentFieldMap -> {
+                    .forEach(documentFieldMap -> documentFieldMap.forEach((key, documentField) -> {
 
-                        documentFieldMap.forEach((key, documentField) -> {
-
-                            switch (key) {
-                                case BUILDING_KEY -> data.setBuildingName(documentField.getContent());
-                                case CLIENT_KEY -> data.setClientName(documentField.getContent());
-                                case CERT_NO_KEY -> data.setCertNo(documentField.getContent());
-                                case CERT_DATE_KEY -> data.setCertDate(documentField.getContent());
-                            }
-                        });
-
-                    });
+                        switch (key) {
+                            case BUILDING_KEY -> data.setBuildingName(documentField.getContent());
+                            case CLIENT_KEY -> data.setClientName(documentField.getContent());
+                            case CERT_NO_KEY -> data.setCertNo(documentField.getContent());
+                            case CERT_DATE_KEY -> data.setCertDate(documentField.getContent());
+                        }
+                    }));
 
         } catch (Exception e) {
             logger.error("Document recognition error");

@@ -57,7 +57,7 @@ public class AzureFileAccesser {
 		
 	public List<String> getSrcFiles(){
 
-		logger.info("Getting all files is src folder");
+		logger.info("Getting all files from src folder");
 
 		List<String> resultList = new ArrayList<>();
 				
@@ -76,7 +76,29 @@ public class AzureFileAccesser {
 		return resultList;
 		
 	}
-	
+
+	public List<String> getProcessedFiles(){
+
+		logger.info("Getting all files from processed folder");
+
+		List<String> resultList = new ArrayList<>();
+
+		processedDirClient.listFilesAndDirectories().forEach(item->{
+
+			if(item.getName().contains(Util.PDF_EXTENSION)) {
+
+				ShareFileClient c = processedDirClient.getFileClient(item.getName());
+				logger.info(c.getFileUrl());
+				resultList.add(item.getName());
+
+			}
+
+		});
+
+		return resultList;
+
+	}
+
 	public String getProcessedFileUrl(String fileName){
 		
 		ShareFileClient pc = processedDirClient.getFileClient(fileName);
@@ -89,6 +111,16 @@ public class AzureFileAccesser {
 		getSrcFiles().forEach(name->{
 
 			ShareFileClient sc = sourceDirClient.getFileClient(name);
+			sc.delete();
+
+		});
+	}
+
+	public void deleteAllFilesInProcessedFolder(){
+
+		getProcessedFiles().forEach(name->{
+
+			ShareFileClient sc = processedDirClient.getFileClient(name);
 			sc.delete();
 
 		});

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import com.kohang.fsi251notifier.repository.ExceptionRepository;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,10 @@ public class FSI251RecongnizerIntegrationTest {
 	private FSI251Recognizer fsi251Recognizer;
 
 	@Autowired
-	private FSI251Repository repository;
+	private FSI251Repository fsi251Repo;
+
+	@Autowired
+	private ExceptionRepository exceptionRepo;
 
 	@BeforeAll
 	public void uploadSampleFile() {
@@ -41,9 +45,10 @@ public class FSI251RecongnizerIntegrationTest {
 
 			//prevent too many files copied by One drive file accesser
 			fileAccesser.deleteAllFilesInSrcFolder();
-			repository.deleteAll();
+			fsi251Repo.deleteAll();
+			exceptionRepo.deleteAll();
 
-			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();			
+			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 
 			if(file.exists()){
 				fileAccesser.uploadToSrcFolder(file);
@@ -70,7 +75,7 @@ public class FSI251RecongnizerIntegrationTest {
 		
 		assertNotNull(expect);
 
-		FSI251Data data = repository.findByCertNo(expect.getCertNo());
+		FSI251Data data = fsi251Repo.findByCertNo(expect.getCertNo());
 
 		assertNotNull(data);
 	}
