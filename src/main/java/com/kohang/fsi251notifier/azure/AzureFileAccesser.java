@@ -109,7 +109,7 @@ public class AzureFileAccesser {
 	public void deleteAllFilesInSrcFolder(){
 
 		getSrcFiles().forEach(name->{
-
+			logger.info("Deleting file:" + name);
 			ShareFileClient sc = sourceDirClient.getFileClient(name);
 			sc.delete();
 
@@ -119,7 +119,7 @@ public class AzureFileAccesser {
 	public void deleteAllFilesInProcessedFolder(){
 
 		getProcessedFiles().forEach(name->{
-
+			logger.info("Deleting file:" + name);
 			ShareFileClient sc = processedDirClient.getFileClient(name);
 			sc.delete();
 

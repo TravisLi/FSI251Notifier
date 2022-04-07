@@ -1,8 +1,18 @@
 package com.kohang.fsi251notifier.util;
 
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.ExceptionRepository;
+import com.kohang.fsi251notifier.repository.FSI251Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TestUtil {
+
+	private static final Logger logger = LoggerFactory.getLogger(TestUtil.class);
 
 	public static final String SAMPLE_CERT_NO = "A 7956010";
 	public static final String SAMPLE_CERT_NO_1 = "A 7956011";
@@ -30,5 +40,29 @@ public class TestUtil {
 		};
 		
 	}
-	
+
+	@Autowired
+	private FSI251Repository fsi251Repository;
+	@Autowired
+	private ExceptionRepository exceptionRepository;
+	@Autowired
+	private AzureFileAccesser azureFileAccesser;
+
+	public void init(){
+		this.initAzureStorage();
+		this.initDB();
+	}
+
+	public void initDB(){
+		logger.info("Deleting DB data");
+		fsi251Repository.deleteAll();
+		exceptionRepository.deleteAll();
+	}
+
+	public void initAzureStorage(){
+		logger.info("Deleting storage data");
+		azureFileAccesser.deleteAllFilesInSrcFolder();
+		azureFileAccesser.deleteAllFilesInProcessedFolder();
+	}
+
 }

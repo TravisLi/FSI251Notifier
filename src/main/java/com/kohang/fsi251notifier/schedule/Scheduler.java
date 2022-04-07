@@ -2,7 +2,8 @@ package com.kohang.fsi251notifier.schedule;
 
 import com.kohang.fsi251notifier.azure.CloudFileCopier;
 import com.kohang.fsi251notifier.azure.FSI251Recognizer;
-import com.kohang.fsi251notifier.email.EmailSender;
+import com.kohang.fsi251notifier.email.ExceptionEmailSender;
+import com.kohang.fsi251notifier.email.Fsi251EmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +21,16 @@ public class Scheduler {
     private static final Logger logger = LoggerFactory.getLogger(Scheduler.class);
 
     private final CloudFileCopier cloudFileCopier;
-    private final EmailSender emailSender;
     private final FSI251Recognizer fsi251Recognizer;
+    private final Fsi251EmailSender fsi251EmailSender;
+    private final ExceptionEmailSender exceptionEmailSender;
 
     @Autowired
-    public Scheduler(CloudFileCopier c, EmailSender e, FSI251Recognizer f){
+    public Scheduler(CloudFileCopier c, FSI251Recognizer f, Fsi251EmailSender fes, ExceptionEmailSender ees){
         this.cloudFileCopier = c;
-        this.emailSender = e;
         this.fsi251Recognizer = f;
+        this.fsi251EmailSender = fes;
+        this.exceptionEmailSender = ees;
     }
 
     //prod: 0 0 0 * * * execute at 00:00:00 everyday
@@ -38,18 +41,25 @@ public class Scheduler {
         cloudFileCopier.copyAllOneDriveCertsToAzureSrcDriveWithCreateDate(createDate);
     }
 
-    //prod: 0 0 1 * * *execute at 00:00 1st of every month
+    //prod: 0 0 1 * * * execute at 00:00 1st of every month
     @Scheduled(cron = "${send.email.cron}")
-    public void sendEmailNotification(){
-        logger.info("Scheduled email Sent Start");
-        emailSender.run();
+    public void sendFsi251EmailNotification(){
+        logger.info("Scheduled fsi251 email sent start");
+        fsi251EmailSender.run();
     }
 
     //prod: 0 0 1 * * * execute at 01:00:00 everyday
     @Scheduled(cron = "${recognition.cron}")
     public void runRecognition(){
-        logger.info("Recognition start");
+        logger.info("Scheduled recognition start");
         fsi251Recognizer.run();
+    }
+
+    //prod: 0 0 2 * * * execute at 01:00:00 everyday
+    @Scheduled(cron = "${send.exception.cron}")
+    public void runExceptionEmailNotification(){
+        logger.info("Scheduled exception email sent start");
+        exceptionEmailSender.run();
     }
 
 }

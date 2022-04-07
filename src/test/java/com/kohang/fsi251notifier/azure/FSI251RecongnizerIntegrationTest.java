@@ -36,7 +36,7 @@ public class FSI251RecongnizerIntegrationTest {
 	private FSI251Repository fsi251Repo;
 
 	@Autowired
-	private ExceptionRepository exceptionRepo;
+	private TestUtil testUtil;
 
 	@BeforeAll
 	public void uploadSampleFile() {
@@ -44,9 +44,7 @@ public class FSI251RecongnizerIntegrationTest {
 		try {
 
 			//prevent too many files copied by One drive file accesser
-			fileAccesser.deleteAllFilesInSrcFolder();
-			fsi251Repo.deleteAll();
-			exceptionRepo.deleteAll();
+			testUtil.init();
 
 			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 

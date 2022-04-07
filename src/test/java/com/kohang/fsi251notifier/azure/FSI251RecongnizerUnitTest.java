@@ -1,24 +1,11 @@
 package com.kohang.fsi251notifier.azure;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.nio.file.Files;
-import java.util.List;
-
+import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import com.kohang.fsi251notifier.repository.FSI251Repository;
+import com.kohang.fsi251notifier.util.TestUtil;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +13,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
-import com.kohang.fsi251notifier.model.FSI251Data;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
-import com.kohang.fsi251notifier.util.TestUtil;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.nio.file.Files;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {FSI251RecongnizerUnitTest.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -129,9 +121,6 @@ public class FSI251RecongnizerUnitTest {
 						
 		List<FSI251Data> dataList = fsi251Recognizer.run();
 
-		@SuppressWarnings("unchecked")
-		ArgumentCaptor<List<String>> ac = ArgumentCaptor.forClass(List.class);
-		
 		//then
 		verify(fsi251Repo, times(4)).save(any());
 		verify(exceptionRepo, times(1)).save(any());

@@ -11,9 +11,9 @@ import com.kohang.fsi251notifier.model.FSI251Data;
 @Repository
 public interface FSI251Repository extends MongoRepository<FSI251Data, String> {
 
-	public FSI251Data findByCertNo(String certNo);
+	FSI251Data findByCertNo(String certNo);
 		
-	@Query("""
+	@Query(value="""
 	{
 	$and:[
 		{$expr: {
@@ -46,7 +46,7 @@ public interface FSI251Repository extends MongoRepository<FSI251Data, String> {
 			]
 		}}
 	]
-	}""")
-	public List<FSI251Data> findByDateRange(String start, String end);
+	}""",sort="{certNo:1}")
+	List<FSI251Data> findByDateRange(String start, String end);
 	
 }
