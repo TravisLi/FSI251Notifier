@@ -30,7 +30,7 @@ public class OneDriveFileAccesser {
     private final GraphServiceClient<Request> graphClient;
 
     public OneDriveFileAccesser(@Value("#{systemProperties['azure.client.id']!=null && systemProperties['azure.client.id']!='' ? systemProperties['azure.client.id'] : systemEnvironment['azure_client_id']}"
-    ) String clientId,
+                                ) String clientId,
                                 @Value("#{systemProperties['azure.client.secret']!=null && systemProperties['azure.client.secret']!='' ? systemProperties['azure.client.secret'] : systemEnvironment['azure_client_secret']}"
                                 ) String clientSecret,
                                 @Value("#{systemProperties['azure.tenant.id']!=null && systemProperties['azure.tenant.id']!='' ? systemProperties['azure.tenant.id'] : systemEnvironment['azure_tenant_id']}"
@@ -80,6 +80,10 @@ public class OneDriveFileAccesser {
         }
 
         throw new InvalidDriveItemException("Cannot get input stream from drive item");
+    }
+
+    public void patchDriveItem(DriveItem driveItem){
+        graphClient.shares(encodeURLinBase64Format(driveItem.webUrl)).driveItem().buildRequest().patch(driveItem);
     }
 
     private static String encodeURLinBase64Format(String url) {

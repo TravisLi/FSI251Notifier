@@ -3,7 +3,7 @@ version: "3.7"
 services:
  apps:
   image: travisli/fsi251-notifier:0.0.5-SNAPSHOT
-  ports: 
+  ports:
    - 7070:8080
   networks:
    - app-net

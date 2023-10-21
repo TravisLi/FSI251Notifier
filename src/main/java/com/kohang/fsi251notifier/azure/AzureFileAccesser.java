@@ -46,7 +46,7 @@ public class AzureFileAccesser {
 		this.processedDirClient = shareClient.getDirectoryClient(PROCESSED_DIR);
 		
 		//create the folder if the folder does not exist
-		if(Boolean.FALSE.equals(this.sourceDirClient.exists())) {
+		if(Boolean.FALSE.equals(this.processedDirClient.exists())) {
 			log.info("Processed directory is missing, create a new one");
 			this.processedDirClient.create();
 		}
@@ -184,7 +184,6 @@ public class AzureFileAccesser {
 	private void uploadToFolder(ShareDirectoryClient client, String fileName, long maxSize, InputStream is) {
 
 		if(is!=null&&!fileName.isEmpty()&&maxSize>0) {
-
 			ShareFileClient sc = client.createFile(fileName, maxSize);
 			ShareFileUploadInfo response = sc.upload(is,maxSize,null);
 			log.info("ETag of uploaded file: {}", response.getETag());
@@ -197,8 +196,7 @@ public class AzureFileAccesser {
 		try {
 			return uploadToFolder(this.sourceDirClient,file);
 		} catch (IOException e) {
-			log.error("Upload to Source folder error");
-			e.printStackTrace();
+			log.error("Upload to Source folder error", e);
 		}
 
 		return "";
@@ -210,8 +208,7 @@ public class AzureFileAccesser {
 		try {
 			return uploadToFolder(this.processedDirClient,file);
 		} catch (IOException e) {
-			log.error("Upload to Processed folder error");
-			e.printStackTrace();
+			log.error("Upload to Processed folder error",e);
 		}
 
 		return "";

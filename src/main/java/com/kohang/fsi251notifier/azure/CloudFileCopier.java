@@ -4,8 +4,8 @@ import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
 import com.kohang.fsi251notifier.util.Util;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -16,19 +16,12 @@ import java.time.ZoneOffset;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CloudFileCopier {
 
     private final AzureFileAccesser azureFileAccesser;
     private final OneDriveFileAccesser oneDriveFileAccesser;
-
-    @Autowired
-    public CloudFileCopier(AzureFileAccesser a, OneDriveFileAccesser o) {
-
-        this.azureFileAccesser = a;
-        this.oneDriveFileAccesser = o;
-
-    }
-
+    
     public void copyAllOneDriveCertsToAzureSrcDrive() {
         log.info("Copying all One Drive cert file to Azure src drive");
         DriveItemCollectionPage page = oneDriveFileAccesser.getDriveItemCollectionPageFromRootFolder();
@@ -50,7 +43,7 @@ public class CloudFileCopier {
         }
     }
 
-    public void processDriveItemCollectionPage(final DriveItemCollectionPage page, LocalDate createDate) {
+    private void processDriveItemCollectionPage(final DriveItemCollectionPage page, LocalDate createDate) {
 
         page.getCurrentPage().forEach(driveItem -> {
             //it is a folder
