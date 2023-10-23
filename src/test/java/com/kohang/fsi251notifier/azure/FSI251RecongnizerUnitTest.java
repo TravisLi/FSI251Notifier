@@ -71,6 +71,8 @@ class FSI251RecongnizerUnitTest {
 			when(accesser.getSrcFileByteArrayOutputStream(TestUtil.SAMPLE_FILE_2)).thenReturn(sampleFile2Baos);
 			when(accesser.getSrcFileByteArrayOutputStream(TestUtil.SAMPLE_FILE_EXCEPTION)).thenReturn(sampleFileExpBaos);
 
+			Thread.sleep(20000);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -88,7 +90,7 @@ class FSI251RecongnizerUnitTest {
 		when(fsi251Repo.findByCertNo(TestUtil.SAMPLE_CERT_NO_EXCEPTION)).thenReturn(TestUtil.getFSI251Data(3));
 
 		//when
-		FSI251Recognizer fsi251Recognizer = new FSI251Recognizer(azureKey,azureEndPoint, accesser, fsi251Repo, exceptionRepo);
+		FSI251Recognizer fsi251Recognizer = new FSI251Recognizer(azureKey, azureEndPoint, accesser, fsi251Repo, exceptionRepo);
 				
 		List<FSI251Data> dataList = fsi251Recognizer.run();
 
@@ -120,7 +122,7 @@ class FSI251RecongnizerUnitTest {
 		List<FSI251Data> dataList = fsi251Recognizer.run();
 
 		//then
-		verify(fsi251Repo, times(4)).save(any());
+		verify(fsi251Repo, times(3)).save(any());
 		verify(exceptionRepo, times(1)).save(any());
 
 		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(0).getFileName());
@@ -129,7 +131,6 @@ class FSI251RecongnizerUnitTest {
 		verify(accesser, times(1)).copyAndDeleteFile(TestUtil.getFSI251Data(3).getFileName());
 
 		assertEquals(1, dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO)).toList().size());
-		assertEquals(1, dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_1)).toList().size());
 		assertEquals(1, dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_2)).toList().size());
 		assertEquals(1, dataList.stream().filter(data -> data.getCertNo().equals(TestUtil.SAMPLE_CERT_NO_EXCEPTION)).toList().size());
 

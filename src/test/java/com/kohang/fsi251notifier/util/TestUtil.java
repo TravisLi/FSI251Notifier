@@ -15,7 +15,7 @@ public class TestUtil {
 	public static final String SAMPLE_CERT_NO = "A 7956010";
 	public static final String SAMPLE_CERT_NO_1 = "A 7956011";
 	public static final String SAMPLE_CERT_NO_2 = "A 7956012";
-	public static final String SAMPLE_CERT_NO_EXCEPTION = "7956019";
+	public static final String SAMPLE_CERT_NO_EXCEPTION = "A 7956019";
 	public static final String SAMPLE_CERT_DATE = "1/10/2021";
 	public static final String SAMPLE_CERT_DATE_1 = "1/11/2021";
 	public static final String SAMPLE_CERT_DATE_2 = "1/12/2021";

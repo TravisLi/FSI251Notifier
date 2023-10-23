@@ -1,9 +1,11 @@
 package com.kohang.fsi251notifier.azure;
 
-import com.azure.ai.formrecognizer.DocumentAnalysisClient;
-import com.azure.ai.formrecognizer.DocumentAnalysisClientBuilder;
-import com.azure.ai.formrecognizer.models.AnalyzedDocument;
+
+import com.azure.ai.formrecognizer.documentanalysis.DocumentAnalysisClient;
+import com.azure.ai.formrecognizer.documentanalysis.DocumentAnalysisClientBuilder;
+import com.azure.ai.formrecognizer.documentanalysis.models.AnalyzedDocument;
 import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.util.BinaryData;
 import com.kohang.fsi251notifier.model.ExceptionData;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
@@ -155,7 +157,7 @@ public class FSI251Recognizer {
 
     private Optional<FSI251Data> processPdfSubPage(ByteArrayOutputStream subOs, String subFileName) {
         try (InputStream subIs = new ByteArrayInputStream(subOs.toByteArray())) {
-            FSI251Data data = this.analyzeDocument(subFileName, subIs, subOs.size());
+            FSI251Data data = this.analyzeDocument(subFileName, BinaryData.fromBytes(subOs.toByteArray()));
 
             //if the document does not contain cert no and cert date, will skip the check
             if (data.getCertNo() != null && data.getCertDate() != null) {
@@ -193,7 +195,7 @@ public class FSI251Recognizer {
         }
     }
 
-    private FSI251Data analyzeDocument(String fileName, InputStream is, long maxSize) {
+    private FSI251Data analyzeDocument(String fileName, BinaryData bd) {
 
         log.info("Recognizing in Azure");
 
@@ -202,7 +204,7 @@ public class FSI251Recognizer {
 
         try {
 
-            client.beginAnalyzeDocument(MODEL_ID, is, maxSize)
+            client.beginAnalyzeDocument(MODEL_ID, bd)
                     .getFinalResult()
                     .getDocuments().stream()
                     .map(AnalyzedDocument::getFields)

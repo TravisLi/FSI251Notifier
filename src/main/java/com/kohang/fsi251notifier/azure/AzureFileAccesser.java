@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -135,7 +136,7 @@ public class AzureFileAccesser {
 		ShareFileClient sc = sourceDirClient.getFileClient(filename);
 		ShareFileClient pc = processedDirClient.createFile(filename, MAX_SIZE);
 
-		SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), null, Duration.ofSeconds(10));
+		SyncPoller<ShareFileCopyInfo, Void> poller = pc.beginCopy(sc.getFileUrl(), Collections.EMPTY_MAP, Duration.ofSeconds(10));
 
 		final PollResponse<ShareFileCopyInfo> pollResponse = poller.poll();
 		final ShareFileCopyInfo value = pollResponse.getValue();
