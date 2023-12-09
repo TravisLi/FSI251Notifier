@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.kohang</groupId>
 	<artifactId>fsi251-notifier</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>FSI251 Notifier</name>
 	<description>Send Reminder for Renewal</description>
 
