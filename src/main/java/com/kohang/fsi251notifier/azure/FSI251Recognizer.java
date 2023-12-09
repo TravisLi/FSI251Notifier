@@ -176,8 +176,14 @@ public class FSI251Recognizer {
                     log.warn(String.format("Cert No %s: already exist", data.getCertNo()));
                 }
             }
+
+            //stop for 2 seconds between each page
+            //prevent from over the threshold of document recognizer free tier limit
+            Thread.sleep(2000);
         } catch (IOException e) {
             log.error("Error occurs while working with Byte Array Input Stream", e);
+        } catch (InterruptedException e) {
+            log.error("Sleeping of thread is interrupted", e);
         }
         return Optional.empty();
     }
