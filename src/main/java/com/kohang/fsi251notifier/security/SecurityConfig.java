@@ -6,16 +6,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Slf4j
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
     private final String username;
     private final String password;
@@ -24,22 +24,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     ) String username,
                           @Value("#{systemProperties['web.password']!=null && systemProperties['web.password']!='' ? systemProperties['web.password'] : systemEnvironment['web_password']}"
                           ) String password) {
-        super();
-
         this.username = username.strip();
         this.password = password.strip();
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/").permitAll()
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/").permitAll()
                 .anyRequest().authenticated()
-                .and()
-                .formLogin().defaultSuccessUrl("/manual")
-                .loginPage("/login").permitAll()
-                .and()
-                .logout().permitAll();
-
+            )
+            .formLogin(form -> form
+                .defaultSuccessUrl("/manual")
+                .loginPage("/login")
+                .permitAll()
+            )
+            .logout(logout -> logout.permitAll());
+        return http.build();
     }
 
     @Bean
