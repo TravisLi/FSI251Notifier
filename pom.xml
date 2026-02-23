@@ -105,18 +105,32 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.25</version>
+			<version>2.0.35</version>
 		</dependency>
 		<!--lombok-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.28</version>
+			<version>1.18.42</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.42</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -132,7 +146,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M3</version>
+				<version>3.5.4</version>
 				<configuration>
 					<includes>
 						<include>**/*UnitTest.java</include>
@@ -145,7 +159,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.0.0-M4</version>
+				<version>3.5.4</version>
 				<executions>
           			<execution>
             			<goals>
@@ -167,7 +181,7 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.39.0</version>
+				<version>0.48.1</version>
 				<configuration>
 					<dockerHost>${env.docker_host}</dockerHost>
 					<certPath>${env.docker_cert_path}</certPath>
@@ -197,7 +211,7 @@
 						<image>
 							<name>travisli/${project.artifactId}:${project.version}</name>
 							<build>
-								<from>openjdk:17-jdk-alpine</from>
+								<from>eclipse-temurin:17-jdk-jammy</from>
 								<tags>
 									<tag>latest</tag>
 								</tags>
