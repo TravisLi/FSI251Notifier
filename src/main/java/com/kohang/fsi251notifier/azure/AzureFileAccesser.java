@@ -1,5 +1,19 @@
 package com.kohang.fsi251notifier.azure;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import com.azure.core.util.polling.PollResponse;
 import com.azure.core.util.polling.SyncPoller;
 import com.azure.storage.file.share.ShareClient;
@@ -7,19 +21,11 @@ import com.azure.storage.file.share.ShareDirectoryClient;
 import com.azure.storage.file.share.ShareFileClient;
 import com.azure.storage.file.share.ShareServiceClientBuilder;
 import com.azure.storage.file.share.models.CopyStatusType;
-import com.azure.storage.file.share.models.ShareFileCopyInfo;
+import com.azure.storage.file.share.models.ShareFileCopyInfo;			
 import com.azure.storage.file.share.models.ShareFileUploadInfo;
 import com.kohang.fsi251notifier.util.Util;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -29,11 +35,11 @@ public class AzureFileAccesser {
 	private static final String SOURCE_DIR = "source";
 	private static final String PROCESSED_DIR = "processed";
 	private static final long MAX_SIZE = 10240;
-	
+
 	private final ShareDirectoryClient sourceDirClient;
 	private final ShareDirectoryClient processedDirClient;
 
-	public AzureFileAccesser(@Value("#{systemProperties['azure.storage']!=null && systemProperties['azure.storage']!=''? systemProperties['azure.storage'] : systemEnvironment['azure_storage']}")String storageConnectionStr) {
+	public AzureFileAccesser(@Value("${azure.storage}") String storageConnectionStr) {
 
 		ShareClient shareClient = new ShareServiceClientBuilder().connectionString(storageConnectionStr.strip()).buildClient().getShareClient(SHARE_FILE_NAME);
 		this.sourceDirClient = shareClient.getDirectoryClient(SOURCE_DIR);
