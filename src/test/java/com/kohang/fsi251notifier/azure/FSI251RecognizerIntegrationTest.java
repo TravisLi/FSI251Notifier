@@ -1,8 +1,11 @@
 package com.kohang.fsi251notifier.azure;
 
-import com.kohang.fsi251notifier.model.FSI251Data;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
-import com.kohang.fsi251notifier.util.TestUtil;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -10,12 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.FSI251Repository;
+import com.kohang.fsi251notifier.util.TestUtil;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -51,8 +51,7 @@ class FSI251RecognizerIntegrationTest {
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
-			fail();
+			fail("Failed to upload sample file to azure: " + e.getMessage());
 		}
 
 	}

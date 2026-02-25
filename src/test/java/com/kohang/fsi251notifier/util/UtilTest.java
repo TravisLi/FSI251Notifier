@@ -1,13 +1,15 @@
 package com.kohang.fsi251notifier.util;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class UtilTest {
 
@@ -25,8 +27,7 @@ class UtilTest {
 			assertEquals(2021, date.getYear());
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
+			fail("Unexpected exception: " + e.getMessage());
 		}
 
 	}

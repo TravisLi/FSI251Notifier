@@ -1,10 +1,18 @@
 package com.kohang.fsi251notifier.email;
 
-import com.kohang.fsi251notifier.azure.AzureFileAccesser;
-import com.kohang.fsi251notifier.model.FSI251Data;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
-import com.kohang.fsi251notifier.util.TestUtil;
-import com.kohang.fsi251notifier.util.Util;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -14,25 +22,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
+import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.FSI251Repository;
+import com.kohang.fsi251notifier.util.TestUtil;
+import com.kohang.fsi251notifier.util.Util;
 
 @SpringBootTest(classes= {Fsi251EmailSenderUnitTest.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class Fsi251EmailSenderUnitTest {
+class Fsi251EmailSenderUnitTest {
 
-	@Value("${email_username}")
+	@Value("${email.username}")
 	private String username;
-	@Value("${email_password}")
+	@Value("${email.password}")
 	private String password;
 	
 	@Mock
@@ -45,7 +47,7 @@ public class Fsi251EmailSenderUnitTest {
 	private ResourceLoader resourceLoader;
 	
 	@BeforeAll
-	public void init() {
+	void init() {
 
 		List<FSI251Data> list = new LinkedList<>();
 
@@ -58,13 +60,12 @@ public class Fsi251EmailSenderUnitTest {
 			data.setFileName(newFileName);
 			data.setCertDate(i+"/10/2021");
 
-			try {
-				ByteArrayOutputStream sampleFileBaos = new ByteArrayOutputStream();
+			try (ByteArrayOutputStream sampleFileBaos = new ByteArrayOutputStream()) {
 				File sampleFile = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 				sampleFileBaos.writeBytes(Files.readAllBytes(sampleFile.toPath()));
 				when(azureFileAccesser.getProcessedFileByteArrayOutputStream(newFileName)).thenReturn(sampleFileBaos);
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new UncheckedIOException(e);
 			}
 
 			list.add(data);
@@ -76,11 +77,9 @@ public class Fsi251EmailSenderUnitTest {
 	}
 	
 	@Test
-	public void runTest() {
-				
+	void runTest() {		
 		Fsi251EmailSender fsi251EmailSender = new Fsi251EmailSender(username, password, "test", azureFileAccesser, repository);
 		assertEquals(2,fsi251EmailSender.run());
 	}
-	
 	
 }

@@ -29,14 +29,10 @@ public class OneDriveFileAccesser {
 
     private final GraphServiceClient<Request> graphClient;
 
-    public OneDriveFileAccesser(@Value("#{systemProperties['azure.client.id']!=null && systemProperties['azure.client.id']!='' ? systemProperties['azure.client.id'] : systemEnvironment['azure_client_id']}"
-                                ) String clientId,
-                                @Value("#{systemProperties['azure.client.secret']!=null && systemProperties['azure.client.secret']!='' ? systemProperties['azure.client.secret'] : systemEnvironment['azure_client_secret']}"
-                                ) String clientSecret,
-                                @Value("#{systemProperties['azure.tenant.id']!=null && systemProperties['azure.tenant.id']!='' ? systemProperties['azure.tenant.id'] : systemEnvironment['azure_tenant_id']}"
-                                ) String tenantId,
-                                @Value("#{systemProperties['onedrive.share.url']!=null && systemProperties['onedrive.share.url']!='' ? systemProperties['onedrive.share.url'] : systemEnvironment['onedrive_share_url']}"
-                                ) String onedriveShareUrl) {
+    public OneDriveFileAccesser(@Value("${azure.client.id}") String clientId,
+                                @Value("${azure.client.secret}") String clientSecret,
+                                @Value("${azure.tenant.id}") String tenantId,
+                                @Value("${onedrive.share.url}") String onedriveShareUrl) {
 
         encodedOneDriveShareUrl = encodeURLinBase64Format(onedriveShareUrl.strip());
 

@@ -1,14 +1,11 @@
 package com.kohang.fsi251notifier.email;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import com.kohang.fsi251notifier.azure.FSI251Recognizer;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,11 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
 import com.kohang.fsi251notifier.azure.AzureFileAccesser;
+import com.kohang.fsi251notifier.azure.FSI251Recognizer;
 import com.kohang.fsi251notifier.util.TestUtil;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class Fsi251EmailSenderIntegrationTest {
+class Fsi251EmailSenderIntegrationTest {
 
 	private static final Logger logger = LoggerFactory.getLogger(Fsi251EmailSenderIntegrationTest.class);
 
@@ -43,28 +41,22 @@ public class Fsi251EmailSenderIntegrationTest {
 	private TestUtil testUtil;
 
 	@BeforeAll
-	public void uploadSampleFile() {
+    void uploadSampleFile() throws IOException {
 
-		try {
+        testUtil.init();
 
-			testUtil.init();
+        logger.info("Uploading file for test");
+        File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
+        File file1 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_1).getFile();
+        File file2 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_2).getFile();
+        fileAccesser.uploadToSrcFolder(file);
+        fileAccesser.uploadToSrcFolder(file1);
+        fileAccesser.uploadToSrcFolder(file2);
 
-			logger.info("Uploading file for test");
-			File file = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
-			File file1 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_1).getFile();	
-			File file2 = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE_2).getFile();	
-			fileAccesser.uploadToSrcFolder(file);
-			fileAccesser.uploadToSrcFolder(file1);
-			fileAccesser.uploadToSrcFolder(file2);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
+    }
 		
 	@Test
-	public void run() {
+	void run() {
 
 		//make the upload available in DB
 		recognizer.run();

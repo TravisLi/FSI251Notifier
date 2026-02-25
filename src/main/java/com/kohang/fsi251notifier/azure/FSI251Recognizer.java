@@ -1,6 +1,21 @@
 package com.kohang.fsi251notifier.azure;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.pdfbox.multipdf.Splitter;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.azure.ai.formrecognizer.documentanalysis.DocumentAnalysisClient;
 import com.azure.ai.formrecognizer.documentanalysis.DocumentAnalysisClientBuilder;
 import com.azure.ai.formrecognizer.documentanalysis.models.AnalyzedDocument;
@@ -11,21 +26,8 @@ import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
 import com.kohang.fsi251notifier.repository.FSI251Repository;
 import com.kohang.fsi251notifier.util.Util;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.multipdf.Splitter;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -43,8 +45,8 @@ public class FSI251Recognizer {
     private final AzureFileAccesser accesser;
 
     @Autowired
-    public FSI251Recognizer(@Value("#{systemProperties['azure.recognition.key']!=null && systemProperties['azure.recognition.key']!='' ? systemProperties['azure.recognition.key'] : systemEnvironment['azure_recognition_key']}") String key,
-                            @Value("#{systemProperties['azure.recognition.endpoint']!=null && systemProperties['azure.recognition.endpoint']!='' ? systemProperties['azure.recognition.endpoint'] : systemEnvironment['azure_recognition_endpoint']}") String endpoint,
+    public FSI251Recognizer(@Value("${azure.recognition.key}") String key,
+                            @Value("${azure.recognition.endpoint}") String endpoint,
                             AzureFileAccesser fa,
                             FSI251Repository f,
                             ExceptionRepository e) {

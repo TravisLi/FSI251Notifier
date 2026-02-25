@@ -1,11 +1,17 @@
 package com.kohang.fsi251notifier.email;
 
-import com.kohang.fsi251notifier.azure.AzureFileAccesser;
-import com.kohang.fsi251notifier.model.ExceptionData;
-import com.kohang.fsi251notifier.model.FSI251Data;
-import com.kohang.fsi251notifier.repository.ExceptionRepository;
-import com.kohang.fsi251notifier.util.TestUtil;
-import com.kohang.fsi251notifier.util.Util;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -15,24 +21,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
+import com.kohang.fsi251notifier.model.ExceptionData;
+import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.ExceptionRepository;
+import com.kohang.fsi251notifier.util.TestUtil;
+import com.kohang.fsi251notifier.util.Util;
 
 @SpringBootTest(classes= {ExceptionEmailSenderUnitTest.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ExceptionEmailSenderUnitTest {
+class ExceptionEmailSenderUnitTest {
 
-	@Value("${email_username}")
+	@Value("${email.username}")
 	private String username;
-	@Value("${email_password}")
+	@Value("${email.password}")
 	private String password;
 	
 	@Mock
@@ -45,7 +47,7 @@ public class ExceptionEmailSenderUnitTest {
 	private ResourceLoader resourceLoader;
 	
 	@BeforeAll
-	public void init() {
+	void init() {
 
 		List<ExceptionData> list = new LinkedList<>();
 
@@ -60,13 +62,12 @@ public class ExceptionEmailSenderUnitTest {
 
 			ExceptionData exceptionData = new ExceptionData(fsi251Data,"Invalid Cert Date format", false);
 
-			try {
-				ByteArrayOutputStream sampleFileBaos = new ByteArrayOutputStream();
+			try (ByteArrayOutputStream sampleFileBaos = new ByteArrayOutputStream()) {
 				File sampleFile = resourceLoader.getResource("classpath:" + TestUtil.SAMPLE_FILE).getFile();
 				sampleFileBaos.writeBytes(Files.readAllBytes(sampleFile.toPath()));
 				when(azureFileAccesser.getProcessedFileByteArrayOutputStream(newFileName)).thenReturn(sampleFileBaos);
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new UncheckedIOException("Failed to read sample file for test: " + e.getMessage(), e);
 			}
 
 			list.add(exceptionData);
@@ -78,11 +79,10 @@ public class ExceptionEmailSenderUnitTest {
 	}
 	
 	@Test
-	public void runTest() {
+	void runTest() {
 				
 		ExceptionEmailSender exceptionEmailSender = new ExceptionEmailSender(username, password, "test", azureFileAccesser, repository);
 		assertEquals(2,exceptionEmailSender.run());
 	}
-	
 	
 }

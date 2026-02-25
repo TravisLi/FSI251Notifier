@@ -1,24 +1,26 @@
 package com.kohang.fsi251notifier.email;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.model.ExceptionData;
 import com.kohang.fsi251notifier.model.FSI251Data;
 import com.kohang.fsi251notifier.repository.ExceptionRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.LinkedList;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -33,8 +35,8 @@ public class ExceptionEmailSender extends EmailSender {
     private final ExceptionRepository exceptionRepo;
 
     @Autowired
-    public ExceptionEmailSender(@Value("#{systemProperties['email.username']!=null && systemProperties['email.username']!='' ? systemProperties['email.username'] : systemEnvironment['email_username']}") String username,
-                                @Value("#{systemProperties['email.password']!=null && systemProperties['email.password']!='' ? systemProperties['email.password'] : systemEnvironment['email_password']}") String password,
+    public ExceptionEmailSender(@Value("${email.username}") String username,
+                                @Value("${email.password}") String password,
                                 @Value("${spring.profiles.active}") String env, AzureFileAccesser f, ExceptionRepository e) {
 
         super(username, password, env, EMAIL_SUBJECT);

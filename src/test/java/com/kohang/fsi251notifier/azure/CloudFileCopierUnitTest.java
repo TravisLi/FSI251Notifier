@@ -1,8 +1,12 @@
 package com.kohang.fsi251notifier.azure;
 
-import com.kohang.fsi251notifier.util.Util;
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.requests.DriveItemCollectionPage;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,12 +14,11 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import com.kohang.fsi251notifier.util.Util;
+import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.requests.DriveItemCollectionPage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import lombok.NonNull;
 
 @SpringBootTest(classes = {AzureFileAccesser.class,OneDriveFileAccesser.class,CloudFileCopier.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -41,12 +44,11 @@ class CloudFileCopierUnitTest {
     }
 
     @Test
-    //TODO the result need to be dynamic
     void testCopyAllOneDriveCertsToAzureSrcDrive(){
 
-        copier.copyAllOneDriveCertsToAzureSrcDrive();
+        int count = copier.copyAllOneDriveCertsToAzureSrcDrive();
 
-        assertEquals(4, azureFileAccesser.getSrcFiles().size());
+        assertEquals(4, count);
 
     }
 
@@ -85,7 +87,7 @@ class CloudFileCopierUnitTest {
         }
     }
 
-    private void updateFileCreationAndLastModifiedDate(DriveItem driveItem, LocalDate dateToUpdate) {
+    private void updateFileCreationAndLastModifiedDate(@NonNull final DriveItem driveItem, final LocalDate dateToUpdate) {
         if (driveItem.name != null && driveItem.name.contains(Util.PDF_EXTENSION)) {
             driveItem.fileSystemInfo.lastModifiedDateTime = OffsetDateTime.of(dateToUpdate, LocalTime.MIDNIGHT, ZoneOffset.UTC);
             driveItem.fileSystemInfo.createdDateTime = OffsetDateTime.of(dateToUpdate, LocalTime.MIDNIGHT, ZoneOffset.UTC);
@@ -93,7 +95,7 @@ class CloudFileCopierUnitTest {
         }
     }
 
-    private void handleFolder(DriveItem driveItem, LocalDate dateToUpdate) {
+    private void handleFolder(@NonNull final DriveItem driveItem, final LocalDate dateToUpdate) {
         if (driveItem.webUrl != null) {
 
             //Intended to skip the folder of 2020 to maintain the last modified date as unchanged

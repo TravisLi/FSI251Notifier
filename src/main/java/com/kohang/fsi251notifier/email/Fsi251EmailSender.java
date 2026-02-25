@@ -1,35 +1,34 @@
 package com.kohang.fsi251notifier.email;
 
-import com.kohang.fsi251notifier.azure.AzureFileAccesser;
-import com.kohang.fsi251notifier.model.FSI251Data;
-import com.kohang.fsi251notifier.repository.FSI251Repository;
-import com.kohang.fsi251notifier.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import jakarta.mail.*;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import com.kohang.fsi251notifier.azure.AzureFileAccesser;
+import com.kohang.fsi251notifier.model.FSI251Data;
+import com.kohang.fsi251notifier.repository.FSI251Repository;
+import com.kohang.fsi251notifier.util.Util;
+
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class Fsi251EmailSender extends EmailSender {
 
-    private static final Logger logger = LoggerFactory.getLogger(Fsi251EmailSender.class);
     private static final String MESSAGE = "以下證書快將到期，請聯絡客戶做年檢</br>";
     private static final String EMAIL_SUBJECT = "證書到期提示";
-    private static final String HTML_TABLE_TEMPLATE = "<table>%s</table>";
     private static final String HTML_TABLE_HEAD_TEMPLATE = "<tr><th>證書號碼</th><th>證書到期日</th></tr>";
     private static final String HTML_TABLE_ROW_TEMPLATE = "<tr><td>%s</td><td>%s</td></tr>";
 
@@ -37,8 +36,8 @@ public class Fsi251EmailSender extends EmailSender {
     private final FSI251Repository repository;
 
     @Autowired
-    public Fsi251EmailSender(@Value("#{systemProperties['email.username']!=null && systemProperties['email.username']!='' ? systemProperties['email.username'] : systemEnvironment['email_username']}") String username,
-                             @Value("#{systemProperties['email.password']!=null && systemProperties['email.password']!='' ? systemProperties['email.password'] : systemEnvironment['email_password']}") String password,
+    public Fsi251EmailSender(@Value("${email.username}") String username,
+                             @Value("${email.password}") String password,
                              @Value("${spring.profiles.active}") String env, AzureFileAccesser f, FSI251Repository r) {
 
         super(username,password,env,EMAIL_SUBJECT);
@@ -61,7 +60,7 @@ public class Fsi251EmailSender extends EmailSender {
     }
 
     public Integer run(LocalDate startDate, LocalDate endDate){
-        logger.info("Finding certs between " + Util.formatLocalDate(startDate) + " to " + Util.formatLocalDate(endDate));
+        log.info("Finding certs between {} to {}", Util.formatLocalDate(startDate), Util.formatLocalDate(endDate));
         List<FSI251Data> dataList = repository.findByDateRange(Util.formatLocalDate(startDate), Util.formatLocalDate(endDate));
 
         return processDataList(dataList);
@@ -90,8 +89,7 @@ public class Fsi251EmailSender extends EmailSender {
                     attachmentBodyPart.attachFile(file);
                     multipart.addBodyPart(attachmentBodyPart);
                 } catch (IOException e) {
-                    logger.error("Attachment Preparation Error");
-                    e.printStackTrace();
+                    log.error("Attachment Preparation Error", e);
                 }
 
             }
@@ -100,12 +98,11 @@ public class Fsi251EmailSender extends EmailSender {
             this.send(message);
 
         } catch (MessagingException e) {
-            e.printStackTrace();
-            logger.error("Email Message Prepare Exception");
+            log.error("Email Message Prepare Exception",e);
         } finally {
 
             for (File file : fileList) {
-                logger.debug("Deleting file " + file.getAbsolutePath() + " result:" + file.delete());
+                log.debug("Deleting file {} result: {}", file.getAbsolutePath(), file.delete());
             }
         }
     }
@@ -124,11 +121,11 @@ public class Fsi251EmailSender extends EmailSender {
 
             if (data.getFileName() != null) {
 
-                logger.info("Preparing attachment for " + data.getFileName());
+                log.info("Preparing attachment for {}", data.getFileName());
 
                 String tmpdir = System.getProperty("java.io.tmpdir");
 
-                logger.debug(tmpdir);
+                log.debug(tmpdir);
 
                 File file = new File(tmpdir + File.separator + data.getFileName());
 
@@ -136,8 +133,8 @@ public class Fsi251EmailSender extends EmailSender {
 
                     Files.write(file.toPath(), fileAccesser.getProcessedFileByteArrayOutputStream(data.getFileName()).toByteArray());
 
-                    logger.debug("Total File Size Count:" + fileSizeCount);
-                    logger.debug("File Size: " + file.length());
+                    log.debug("Total File Size Count: {}",fileSizeCount);
+                    log.debug("File Size: {}", file.length());
 
                     if (fileSizeCount + file.length() > MAX_ATTACHMENT_SIZE) {
 
@@ -159,8 +156,7 @@ public class Fsi251EmailSender extends EmailSender {
                     }
 
                 } catch (IOException e) {
-                    logger.error("File processing error");
-                    e.printStackTrace();
+                    log.error("File processing error", e);
                     sendList.add(data);
                 }
 
@@ -191,15 +187,12 @@ public class Fsi251EmailSender extends EmailSender {
                 builder.append(String.format(HTML_TABLE_ROW_TEMPLATE, data.getCertNo(), Util.formatLocalDate(Util.getCertExpiryDate(certDate))));
 
             } catch (Exception e) {
-                logger.error("Cert Date Conversion Error");
-                e.printStackTrace();
+                log.error("Cert Date Conversion Error", e);
             }
 
         }
 
         return String.format(HTML_TABLE_TEMPLATE, builder);
     }
-
-
 
 }

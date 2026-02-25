@@ -1,19 +1,20 @@
 package com.kohang.fsi251notifier.azure;
 
-import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.requests.DriveItemCollectionPage;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
+import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.requests.DriveItemCollectionPage;
 
-import static com.mongodb.assertions.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest(classes = {OneDriveFileAccesser.class})
@@ -63,8 +64,7 @@ class OneDriveFileAccesserUnitTest {
             try(InputStream is = fileAccesser.getInputStreamFromDriveItem(childItem)){
                 assertNotNull(is);
             }catch (InvalidDriveItemException | IOException e) {
-                e.printStackTrace();
-                fail();
+                fail("Failed to get input stream from drive item: " + childItem.name);
             }
 
         });

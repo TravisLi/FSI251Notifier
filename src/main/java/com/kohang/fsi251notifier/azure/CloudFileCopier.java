@@ -1,18 +1,20 @@
 package com.kohang.fsi251notifier.azure;
 
-import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
-import com.kohang.fsi251notifier.util.Util;
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.requests.DriveItemCollectionPage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+
+import org.springframework.stereotype.Component;
+
+import com.kohang.fsi251notifier.exception.InvalidDriveItemException;
+import com.kohang.fsi251notifier.util.Util;
+import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.requests.DriveItemCollectionPage;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -22,13 +24,14 @@ public class CloudFileCopier {
     private final AzureFileAccesser azureFileAccesser;
     private final OneDriveFileAccesser oneDriveFileAccesser;
     
-    public void copyAllOneDriveCertsToAzureSrcDrive() {
+    public int copyAllOneDriveCertsToAzureSrcDrive() {
         log.info("Copying all One Drive cert file to Azure src drive");
         DriveItemCollectionPage page = oneDriveFileAccesser.getDriveItemCollectionPageFromRootFolder();
         if (page != null) {
-            processDriveItemCollectionPage(page, null);
+            return processDriveItemCollectionPage(page, null);
         } else {
             log.warn("No root folder found!!!");
+            return 0;
         }
     }
 
@@ -43,29 +46,35 @@ public class CloudFileCopier {
         }
     }
 
-    private void processDriveItemCollectionPage(final DriveItemCollectionPage page, LocalDate createDate) {
+    private int processDriveItemCollectionPage(DriveItemCollectionPage page, LocalDate createDate) {
 
-        page.getCurrentPage().forEach(driveItem -> {
-            //it is a folder
-            if (driveItem.folder != null) {
-                handleFolder(createDate, driveItem);
-            //it is a file
-            } else {
-                handleFile(createDate, driveItem);
-            }
-        });
+        int count = page.getCurrentPage().stream()
+            .mapToInt(driveItem -> {
+                if (driveItem.folder != null) {
+                    return handleFolder(createDate, driveItem);
+                } else {
+                    return handleFile(createDate, driveItem);
+                }
+            })
+            .sum();
 
         if (page.getNextPage() != null) {
-            DriveItemCollectionPage nextPage = page.getNextPage().buildRequest().get();
-            if (nextPage != null) {
-                processDriveItemCollectionPage(nextPage, createDate);
+            var nextPageRequest = page.getNextPage();
+            if (nextPageRequest != null) {
+                DriveItemCollectionPage nextPage = nextPageRequest.buildRequest().get();
+                if (nextPage != null) {
+                    count += processDriveItemCollectionPage(nextPage, createDate);
+                }
             }
         }
+
+        return count;
     }
 
-    private void handleFile(LocalDate createDate, DriveItem driveItem) {
-        if (driveItem.name != null && driveItem.name.contains(Util.PDF_EXTENSION)) {
-            log.info("processing file with name: " + driveItem.name);
+    private int handleFile(LocalDate createDate, DriveItem driveItem) {
+        String fileName = driveItem.name;
+        if (fileName != null && fileName.contains(Util.PDF_EXTENSION)) {
+            log.info("processing file with name: " + fileName);
 
             boolean doUpload;
 
@@ -77,8 +86,10 @@ public class CloudFileCopier {
 
             if (doUpload) {
                 this.uploadDriveItem(driveItem);
+                return 1;
             }
         }
+        return 0;
     }
 
     private boolean handleFileWithCreationDate(LocalDate createDate, DriveItem driveItem) {
@@ -95,9 +106,10 @@ public class CloudFileCopier {
 
         if (driveItem.createdDateTime != null) {
 
-            log.debug("createdDateTime:" + toOffsetDateTime);
+            log.debug("createdDateTime:" + driveItem.createdDateTime);
 
-            if ((driveItem.createdDateTime.isAfter(fromOffsetDateTime) || driveItem.createdDateTime.isEqual(fromOffsetDateTime)) && driveItem.createdDateTime.isBefore(toOffsetDateTime)) {
+            OffsetDateTime createdDateTime = driveItem.createdDateTime;
+            if (createdDateTime != null && (createdDateTime.isAfter(fromOffsetDateTime) || createdDateTime.isEqual(fromOffsetDateTime)) && createdDateTime.isBefore(toOffsetDateTime)) {
                 doUpload = true;
             }
         }
@@ -119,21 +131,23 @@ public class CloudFileCopier {
 
         if (driveItem.lastModifiedDateTime != null) {
             log.debug("lastModifiedDateTime:" + driveItem.lastModifiedDateTime);
-            if ((driveItem.lastModifiedDateTime.isAfter(fromOffsetDateTime) || driveItem.lastModifiedDateTime.isEqual(fromOffsetDateTime)) && driveItem.lastModifiedDateTime.isBefore(toOffsetDateTime)) {
+            OffsetDateTime lastModifiedDateTime = driveItem.lastModifiedDateTime;
+            if (lastModifiedDateTime != null && (lastModifiedDateTime.isAfter(fromOffsetDateTime) || lastModifiedDateTime.isEqual(fromOffsetDateTime)) && lastModifiedDateTime.isBefore(toOffsetDateTime)) {
                 doUpload = true;
             }
         }
         return doUpload;
     }
 
-    private void handleFolder(LocalDate createDate, DriveItem driveItem) {
+    private int handleFolder(LocalDate createDate, DriveItem driveItem) {
         log.info("processing folder with name: " + driveItem.name);
         if (driveItem.webUrl != null) {
             DriveItemCollectionPage folderPage = oneDriveFileAccesser.getDriverItemCollectionPage(driveItem);
             if (folderPage != null) {
-                processDriveItemCollectionPage(folderPage, createDate);
+                return processDriveItemCollectionPage(folderPage, createDate);
             }
         }
+        return 0;
     }
 
     private void uploadDriveItem(DriveItem item) {

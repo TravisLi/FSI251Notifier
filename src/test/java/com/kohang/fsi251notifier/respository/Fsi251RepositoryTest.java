@@ -1,12 +1,10 @@
 package com.kohang.fsi251notifier.respository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -30,7 +28,7 @@ import com.kohang.fsi251notifier.util.Util;
 @TestMethodOrder(OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureDataMongo
-public class Fsi251RepositoryTest {
+class Fsi251RepositoryTest {
 
 	private static final Logger logger = LoggerFactory.getLogger(Fsi251RepositoryTest.class);
 
@@ -39,7 +37,7 @@ public class Fsi251RepositoryTest {
 
 	@BeforeAll
 	@Transactional
-	public void init() {
+	void init() {
 		logger.debug("Test Preparation Start");
 
 		repository.deleteAll();
@@ -67,7 +65,7 @@ public class Fsi251RepositoryTest {
 	@Test
 	@DisplayName("Test findByCertNo")
 	@Order(1)
-	public void deleteInsertAndRead() {
+	void deleteInsertAndRead() {
 
 		FSI251Data ret = repository.findByCertNo(TestUtil.SAMPLE_CERT_NO_1);
 
@@ -78,19 +76,15 @@ public class Fsi251RepositoryTest {
 	@Test
 	@DisplayName("Test findByDateRange")
 	@Order(2)
-	public void selectByRange() {
+	void selectByRange() {
 
-		List<FSI251Data> list = repository.findByDateRange("1/12/2021", "31/12/2021");
+        List<FSI251Data> list = repository.findByDateRange("1/12/2021", "31/12/2021");
 
-		for(FSI251Data d:list) {
-			LocalDate certDate;
-			try {
-				certDate = Util.convertDateStrToLocalDate(d.getCertDate());
-				assertEquals(certDate.getMonth(), Month.DECEMBER);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+        for (FSI251Data d : list) {
+            LocalDate certDate;
+            certDate = Util.convertDateStrToLocalDate(d.getCertDate());
+            assertEquals(Month.DECEMBER, certDate.getMonth());
+        }
 
 	}
 }
