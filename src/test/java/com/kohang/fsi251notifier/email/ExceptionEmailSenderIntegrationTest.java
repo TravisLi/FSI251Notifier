@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
 
 import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.azure.FSI251Recognizer;
+import com.kohang.fsi251notifier.config.TestcontainersConfiguration;
 import com.kohang.fsi251notifier.util.TestUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(TestcontainersConfiguration.class)
 class ExceptionEmailSenderIntegrationTest {
 
 	@Autowired

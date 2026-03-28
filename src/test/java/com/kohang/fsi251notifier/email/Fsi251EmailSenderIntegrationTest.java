@@ -13,14 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
 
 import com.kohang.fsi251notifier.azure.AzureFileAccesser;
 import com.kohang.fsi251notifier.azure.FSI251Recognizer;
+import com.kohang.fsi251notifier.config.TestcontainersConfiguration;
 import com.kohang.fsi251notifier.util.TestUtil;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(TestcontainersConfiguration.class)
 class Fsi251EmailSenderIntegrationTest {
 
 	private static final Logger logger = LoggerFactory.getLogger(Fsi251EmailSenderIntegrationTest.class);
